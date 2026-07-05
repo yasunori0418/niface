@@ -39,7 +39,7 @@
         # flake.nput.<system>.<name> へ転置し、CLI から addressable にする。
         inputs.nput.flakeModules.default
         # mattpocock/skills 配置 config（perSystem.nput.skills）を切り出す。
-        ./niface.nix
+        ./nput.nix
       ];
       perSystem =
         { inputs', pkgs, ... }:
