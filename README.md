@@ -9,7 +9,7 @@ In a UNIX-philosophy ecosystem where each tool has a single responsibility and t
 This repository has two roles:
 
 1. **The niface specification**: the normative spec, JSON Schema, conformance test data, and reference implementations.
-2. **The ecosystem's central documentation**: the overall vision for the n-prefixed tools, the distribution plan, and the naming record ([docs/ecosystem/](docs/ecosystem/)).
+2. **The ecosystem's central documentation**: the overall vision for the n-prefixed tools and the distribution plan ([docs/ecosystem/](docs/ecosystem/)).
 
 > **Status: draft (specVersion 1)** — the initial design questions are settled. We are now in the phase of stacking backward-compatible changes (adding fields) driven by feedback from real tools.
 
@@ -31,7 +31,6 @@ Ecosystem:
 |------|------|
 | [docs/ecosystem/overview.md](docs/ecosystem/overview.md) | Master index: the north star, tool list, and design principles |
 | [docs/ecosystem/distro-plan.md](docs/ecosystem/distro-plan.md) | The distribution vision, each tool's responsibility, and milestones |
-| [docs/ecosystem/naming.md](docs/ecosystem/naming.md) | The naming decisions and how they were reached |
 
 ## Repository layout
 

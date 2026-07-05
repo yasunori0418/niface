@@ -9,7 +9,7 @@
 本リポジトリは 2 つの役割を持つ:
 
 1. **niface 規格**: 仕様・schema・適合テストデータ・参照実装
-2. **エコシステム中央ドキュメント**: n プレフィックスツール群の全体構想・ディストリビューション化プラン・命名記録（[docs/ecosystem/](docs/ecosystem/)）
+2. **エコシステム中央ドキュメント**: n プレフィックスツール群の全体構想・ディストリビューション化プラン（[docs/ecosystem/](docs/ecosystem/)）
 
 > **ステータス: draft (specVersion 1)** — 初期論点は確定済み。実装ツールからのフィードバックにより互換変更（フィールド追加）を積む段階。
 
@@ -29,7 +29,6 @@
 |------|------|
 | [docs/ecosystem/overview.md](docs/ecosystem/overview.md) | 全体索引: 北極星・ツール一覧・設計原則 |
 | [docs/ecosystem/distro-plan.md](docs/ecosystem/distro-plan.md) | ディストリビューション構想と各ツールの責務・マイルストーン |
-| [docs/ecosystem/naming.md](docs/ecosystem/naming.md) | 命名の決定記録と検討経緯 |
 
 ## リポジトリ構成
 

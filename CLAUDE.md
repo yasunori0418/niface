@@ -11,7 +11,6 @@ testdata)とエコシステム中央ドキュメント(docs/ecosystem/)の 2 つ
 - `README.md` / `docs/ecosystem/overview.md` — 全体像
 - `spec/v1/spec.md` — 規範(RFC 2119 語彙)
 - `docs/design.md` — 全 19 設計判断とその根拠。**規格を変更する前に必ず参照**
-- `docs/HANDOFF.md` — 前回セッションの到達点・未完了タスク
 
 ## 検証コマンド
 
