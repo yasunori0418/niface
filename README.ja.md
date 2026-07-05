@@ -19,8 +19,10 @@
 
 | 文書 | 内容 |
 |------|------|
+| [CONTEXT.md](CONTEXT.md) | 用語集（規格の語彙の正名） |
 | [docs/concept.md](docs/concept.md) | なぜ存在するか・原則・しないこと |
-| [docs/design.md](docs/design.md) | 全設計判断（19 項目）とその根拠 |
+| [docs/design.md](docs/design.md) | 設計概要と ADR 索引 |
+| [docs/adr/](docs/adr/) | 設計判断の個別記録（背景・根拠・棄却案） |
 | [spec/v1/spec.md](spec/v1/spec.md) | **規範**（RFC 2119 語彙による仕様） |
 
 エコシステム:
@@ -34,8 +36,11 @@
 
 ```
 niface/
+├── CONTEXT.md        # 用語集（規格の語彙の正名）
 ├── docs/             # 規格のコンセプト・設計
-│   └── ecosystem/    # エコシステム中央ドキュメント（構想・命名・全体索引）
+│   ├── adr/          # 設計判断の個別記録（ADR）
+│   ├── agents/       # エージェント向けの参照規約
+│   └── ecosystem/    # エコシステム中央ドキュメント（構想・全体索引）
 ├── spec/v1/          # 規範仕様
 ├── schema/v1/        # JSON Schema（機械可読の正）
 ├── testdata/v1/      # 適合テストデータ

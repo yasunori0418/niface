@@ -21,8 +21,10 @@ Specification:
 
 | Document | Contents |
 |------|------|
+| [CONTEXT.md](CONTEXT.md) | Glossary — the spec's canonical vocabulary |
 | [docs/concept.md](docs/concept.md) | Why it exists, its principles, and its non-goals |
-| [docs/design.md](docs/design.md) | All design decisions (19 items) and their rationale |
+| [docs/design.md](docs/design.md) | Design overview and ADR index |
+| [docs/adr/](docs/adr/) | Design decisions as ADRs (context, rationale, rejected alternatives) |
 | [spec/v1/spec.md](spec/v1/spec.md) | **Normative** (the specification, in RFC 2119 vocabulary) |
 
 Ecosystem:
@@ -36,8 +38,11 @@ Ecosystem:
 
 ```
 niface/
+├── CONTEXT.md        # Glossary (the spec's canonical vocabulary)
 ├── docs/             # The spec's concept and design
-│   └── ecosystem/    # Ecosystem central docs (vision, naming, master index)
+│   ├── adr/          # Design decisions as ADRs
+│   ├── agents/       # Conventions for agents consuming the domain docs
+│   └── ecosystem/    # Ecosystem central docs (vision, master index)
 ├── spec/v1/          # The normative specification
 ├── schema/v1/        # JSON Schema (the machine-readable source of truth)
 ├── testdata/v1/      # Conformance test data
