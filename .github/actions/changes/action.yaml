@@ -1,0 +1,40 @@
+name: 'Detect relevant changes'
+description: 'nix flake check の入力（nix / Go / schema / testdata / scripts / CI）が変わったかを判定する。docs・spec 散文だけの変更では run=false。'
+outputs:
+  run:
+    description: 'true when check-relevant files changed, or on any non-pull_request event'
+    value: ${{ steps.decide.outputs.run }}
+runs:
+  using: 'composite'
+  steps:
+    # pull_request では変更パスを分類する。skip されたジョブは required status
+    # check として success 扱いになるため、docs のみの PR でも常に report される。
+    - name: Filter changed paths
+      id: filter
+      if: github.event_name == 'pull_request'
+      uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v4.0.1
+      with:
+        filters: |
+          relevant:
+            - '**.nix'
+            - '**.go'
+            - 'go/go.mod'
+            - 'schema/**'
+            - 'testdata/**'
+            - 'scripts/**'
+            - 'flake.lock'
+            - 'dev/flake.lock'
+            - '.github/workflows/**'
+            - '.github/actions/**'
+
+    # pull_request 以外（workflow_dispatch）は常に実行。pull_request は関連
+    # ファイルが変わったときのみ nix を回す。
+    - name: Decide
+      id: decide
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" != "pull_request" ]; then
+          echo "run=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "run=${{ steps.filter.outputs.relevant }}" >> "$GITHUB_OUTPUT"
+        fi

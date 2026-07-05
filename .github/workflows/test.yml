@@ -1,0 +1,52 @@
+name: Test
+
+on:
+  workflow_dispatch:
+  # paths トリガーは張らない。全 PR で起動させ、required status check が常に
+  # report されるようにする（関連変更の有無は changes ジョブで判定し、
+  # flake-check は step レベルで gate する）。docs・spec 散文だけの PR では
+  # nix を回さない。
+  pull_request:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.detect.outputs.run }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Detect relevant changes
+        id: detect
+        uses: ./.github/actions/changes
+
+  flake-check:
+    needs: changes
+    # job レベルの if: は matrix 展開ごと skip してしまい、ruleset が要求する
+    # `flake-check (os, system)` の context が生成されず merge が永久にブロック
+    # される。そのため job・matrix は常に走らせ、step レベルで gate する
+    # （関連変更が無ければ何もせず success を report）。
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            system: x86_64-linux
+          - os: ubuntu-24.04-arm
+            system: aarch64-linux
+          - os: macos-latest
+            system: aarch64-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup Nix
+        if: needs.changes.outputs.run == 'true'
+        uses: ./.github/actions/setup-nix
+        with:
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      # id-vectors（Nix 実装）/ schema（testdata）/ go test をまとめて検証する。
+      - name: Run nix flake check
+        if: needs.changes.outputs.run == 'true'
+        run: nix flake check -L
