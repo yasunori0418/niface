@@ -1,16 +1,12 @@
 # niface: 仕様（specVersion 1）
 
-本文書は規範である。キーワード MUST / MUST NOT / SHOULD / MAY は RFC 2119 に従う。
-設計判断の根拠は design.md、目的と原則は concept.md を参照。
+本文書は規範である。キーワード MUST / MUST NOT / SHOULD / MAY は RFC 2119 に従う。設計判断の根拠は design.md、目的と原則は concept.md を参照。
 
 ## 1. 出力チャネル
 
-- ツールは stdout に**単一の valid JSON 文書（エンベロープ）のみ**を出力しなければ
-  ならない（MUST）。複数文書・NDJSON・非 JSON の混在を禁止する
+- ツールは stdout に**単一の valid JSON 文書（エンベロープ）のみ**を出力しなければならない（MUST）。複数文書・NDJSON・非 JSON の混在を禁止する
 - 進捗・ログ・診断は stderr に出力する（形式は自由）
-- exit code は POSIX 慣行に従う: 0 = 成功、非 0 = 失敗。
-  トップレベル `status` と連動しなければならない（MUST）:
-  `success` ⇔ 0、`error` ⇔ 非 0。消費側が依存してよいのはこの対応のみ
+- exit code は POSIX 慣行に従う: 0 = 成功、非 0 = 失敗。トップレベル `status` と連動しなければならない（MUST）: `success` ⇔ 0、`error` ⇔ 非 0。消費側が依存してよいのはこの対応のみ
 
 ## 2. エンベロープ
 
@@ -33,15 +29,10 @@
 ```
 
 - フィールド命名は camelCase とする
-- `specVersion` は整数。互換変更（フィールド追加）では増やさない。
-  フィールドの削除・意味変更・必須化で増やす
-- `status` は 2 値。**1 件でも item が failed であれば `error`** としなければ
-  ならない（MUST）
-- `dryRun: true` の出力は、`dryRun` の値以外において apply と同一スキーマで
-  なければならない（MUST）
-- トップレベル `errors[]` には **item に紐づかない全体エラーのみ**を置く
-  （入力 parse 失敗・lock 取得失敗等）。item 起因のエラーを置いてはならない
-  （MUST NOT）
+- `specVersion` は整数。互換変更（フィールド追加）では増やさない。フィールドの削除・意味変更・必須化で増やす
+- `status` は 2 値。**1 件でも item が failed であれば `error`** としなければならない（MUST）
+- `dryRun: true` の出力は、`dryRun` の値以外において apply と同一スキーマでなければならない（MUST）
+- トップレベル `errors[]` には **item に紐づかない全体エラーのみ**を置く（入力 parse 失敗・lock 取得失敗等）。item 起因のエラーを置いてはならない（MUST NOT）
 - 消費側は未知フィールドを無視しなければならない（MUST / must-ignore）
 
 ## 3. Item
@@ -60,10 +51,8 @@
 }
 ```
 
-- `skipped` は「前段の失敗による未実行」等に使う。dry-run では使わない
-  （dry-run の items は「実行したら何をするか」を表し status は原則 success）
-- ツール固有フィールドは `info` 配下にのみ置く（MUST）。
-  規格フィールドと同一階層に追加してはならない
+- `skipped` は「前段の失敗による未実行」等に使う。dry-run では使わない（dry-run の items は「実行したら何をするか」を表し status は原則 success）
+- ツール固有フィールドは `info` 配下にのみ置く（MUST）。規格フィールドと同一階層に追加してはならない
 
 ### Error / Warning
 
@@ -88,8 +77,7 @@
 ```
 
 - **差分のある項目のみ**列挙する。noop を含めてはならない（MUST NOT）
-- `reversible: false` の差分を含む実行の巻き戻しは不完全となる。
-  消費側はこれを警告として扱うべきである（SHOULD）
+- `reversible: false` の差分を含む実行の巻き戻しは不完全となる。消費側はこれを警告として扱うべきである（SHOULD）
 
 ## 5. Item id の導出
 
@@ -99,22 +87,16 @@ id       = lowercase-hex( sha256( JCS( identity ) ) )
 ```
 
 - JCS は RFC 8785（JSON Canonicalization Scheme）
-- ツールが定めるのは identity の中身のみ。key は対象の
-  **宣言上の同一性を表す最小の値集合**としなければならない（MUST）
-- key にビルド毎・実行毎に変わる値（store パス・タイムスタンプ・世代番号）を
-  含めてはならない（MUST NOT）
-- 同一対象の id は世代・実行・plan/apply を跨いで不変でなければならない（MUST）。
-  違反はツールの欠陥として扱う
+- ツールが定めるのは identity の中身のみ。key は対象の**宣言上の同一性を表す最小の値集合**としなければならない（MUST）
+- key にビルド毎・実行毎に変わる値（store パス・タイムスタンプ・世代番号）を含めてはならない（MUST NOT）
+- 同一対象の id は世代・実行・plan/apply を跨いで不変でなければならない（MUST）。違反はツールの欠陥として扱う
 - 一意性の範囲はツール内。複数ツールの集約時はエンベロープの `tool.name` で修飾する
 
 ## 6. エラーコード
 
-- 二層命名: 共通コード `E_<NAME>`、ツール別コード `E_<TOOL>_<NAME>`。
-  警告（`W_`）も同様
-- 判断基準: 他のツールでも同じ意味で出しうるなら共通、
-  ツールの概念を知らないと意味が取れないならツール別
-- 共通コードの追加は「2 つ以上のツールで同じ意味の code が必要になった」ことを
-  条件とする（needs 駆動）。追加は互換変更
+- 二層命名: 共通コード `E_<NAME>`、ツール別コード `E_<TOOL>_<NAME>`。警告（`W_`）も同様
+- 判断基準: 他のツールでも同じ意味で出しうるなら共通、ツールの概念を知らないと意味が取れないならツール別
+- 共通コードの追加は「2 つ以上のツールで同じ意味の code が必要になった」ことを条件とする（needs 駆動）。追加は互換変更
 
 ### 共通コード初期レジストリ
 
@@ -134,14 +116,10 @@ id       = lowercase-hex( sha256( JCS( identity ) ) )
 
 - 専用の result 型は設けない。前提条件 1 つ = Item 1 つで表現する
 - 不成立は `status: "failed"` + `error.code: "E_PRECONDITION"`
-- 1 件でも不成立ならトップレベル `status: "error"`・exit code 非 0
-  （消費側は check を実行可否の gate として `&&` 接続できる）
+- 1 件でも不成立ならトップレベル `status: "error"`・exit code 非 0（消費側は check を実行可否の gate として `&&` 接続できる）
 - check は副作用を持たない。`dryRun` フィールドは出力し、値は `true` を推奨
 
 ## 8. 適合
 
-- 本仕様への適合は、schema/v1/ の JSON Schema 検証と
-  testdata/v1/id-vectors.json の全ベクタ通過をもって判定する
-- 適合するツールは standalone で動作しなければならない（MUST）:
-  入力は stdin の JSON か明示引数のみとし、状態・設定の暗黙探索、
-  特定ディストリビューション・特定フレームワークへの依存をしない
+- 本仕様への適合は、schema/v1/ の JSON Schema 検証と testdata/v1/id-vectors.json の全ベクタ通過をもって判定する
+- 適合するツールは standalone で動作しなければならない（MUST）: 入力は stdin の JSON か明示引数のみとし、状態・設定の暗黙探索、特定ディストリビューション・特定フレームワークへの依存をしない
