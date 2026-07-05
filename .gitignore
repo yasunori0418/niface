@@ -1,0 +1,10 @@
+# ---- Nix ----
+# nix build の out-link
+result
+result-*
+
+# ---- direnv ----
+.direnv/
+
+# ---- nput 配置物（dev の shellHook が nput apply skills で生成）----
+.claude/skills/*
