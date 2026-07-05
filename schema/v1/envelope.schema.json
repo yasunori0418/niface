@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/yasunori0418/niface/schema/v1/envelope.schema.json",
+  "title": "niface envelope (specVersion 1)",
+  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specVersion", "tool", "command", "status", "dryRun", "startedAt", "finishedAt", "result"],
+  "properties": {
+    "specVersion": { "type": "integer", "const": 1 },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "command": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["success", "error"] },
+    "dryRun": { "type": "boolean" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "errors": {
+      "description": "item に紐づかない全体エラーのみ。item 起因のエラーを置いてはならない",
+      "type": "array",
+      "items": { "$ref": "#/$defs/error" }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+        "changes": { "type": "array", "items": { "$ref": "#/$defs/change" } },
+        "info": { "type": "object" }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "description": "sha256(JCS(identity)) の lowercase hex",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "code": {
+      "description": "共通コード E_<NAME> / W_<NAME>、またはツール別 E_<TOOL>_<NAME> / W_<TOOL>_<NAME>",
+      "type": "string",
+      "pattern": "^[EW]_[A-Z][A-Z0-9_]*$"
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "$ref": "#/$defs/code" },
+        "message": { "type": "string" },
+        "detail": { "type": "object" }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "status": { "enum": ["success", "failed", "skipped"] },
+        "error": { "$ref": "#/$defs/error" },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/error" } },
+        "info": { "type": "object" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "failed" } } },
+          "then": { "required": ["id", "kind", "status", "error"] }
+        }
+      ]
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "itemId", "reversible"],
+      "properties": {
+        "kind": { "enum": ["add", "remove", "modify"] },
+        "itemId": { "$ref": "#/$defs/id" },
+        "reversible": { "type": "boolean" },
+        "info": { "type": "object" }
+      }
+    }
+  }
+}

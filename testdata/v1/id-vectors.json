@@ -1,0 +1,91 @@
+{
+  "specVersion": 1,
+  "algorithm": "sha256(JCS(identity)) -> lowercase hex",
+  "note": "canonical はデバッグ用の参考値。適合判定は expected との一致のみで行う。JCS subset: 文字列/整数/bool/null/配列/オブジェクト(浮動小数は非対応)",
+  "vectors": [
+    {
+      "identity": {
+        "kind": "entry",
+        "key": {
+          "target": ".zshrc"
+        }
+      },
+      "canonical": "{\"key\":{\"target\":\".zshrc\"},\"kind\":\"entry\"}",
+      "expected": "2ba0b24fb64819dfe4bab60dd153fe5a636bdd5a7535d32039c1fe24736f97f8"
+    },
+    {
+      "identity": {
+        "kind": "entry",
+        "key": {
+          "target": ".config/nvim/init.lua"
+        }
+      },
+      "canonical": "{\"key\":{\"target\":\".config/nvim/init.lua\"},\"kind\":\"entry\"}",
+      "expected": "4f63987615f37911e2dbb1741f2d88ae288acf3ada4d5b625b54cd94f39429e3"
+    },
+    {
+      "identity": {
+        "kind": "unit",
+        "key": {
+          "unit": "sshd.service",
+          "scope": "system"
+        }
+      },
+      "canonical": "{\"key\":{\"scope\":\"system\",\"unit\":\"sshd.service\"},\"kind\":\"unit\"}",
+      "expected": "92a2c6b28dcde794431d9c2dac2a3bfa7bb76ecb1148dac70c2a20475e5a6b22"
+    },
+    {
+      "identity": {
+        "kind": "entry",
+        "key": {
+          "target": "メモ/日記.md"
+        }
+      },
+      "canonical": "{\"key\":{\"target\":\"メモ/日記.md\"},\"kind\":\"entry\"}",
+      "expected": "314aa0c94e65e38f9feba47be03b9fd1a3f548da3610b56d25d14b7874753fa8"
+    },
+    {
+      "identity": {
+        "kind": "bootentry",
+        "key": {
+          "slot": 1
+        }
+      },
+      "canonical": "{\"key\":{\"slot\":1},\"kind\":\"bootentry\"}",
+      "expected": "2c221ce997ab7ec9c6141cc3a756486567842cd523b190c8cc7fe67d3a061184"
+    },
+    {
+      "identity": {
+        "kind": "requirement",
+        "key": {
+          "name": "esp-mounted",
+          "optional": false
+        }
+      },
+      "canonical": "{\"key\":{\"name\":\"esp-mounted\",\"optional\":false},\"kind\":\"requirement\"}",
+      "expected": "895da5a1a51d63456a4b5b88b0b0ba52646718d87c36edddec0c359ccf80286f"
+    },
+    {
+      "identity": {
+        "kind": "wrapper",
+        "key": {
+          "source": "sudo",
+          "caps": [
+            "cap_setuid",
+            "cap_setgid"
+          ]
+        }
+      },
+      "canonical": "{\"key\":{\"caps\":[\"cap_setuid\",\"cap_setgid\"],\"source\":\"sudo\"},\"kind\":\"wrapper\"}",
+      "expected": "dc673dde54d672321e536240eead35e39f2ca3f74387dfa2613633d9dc70561c"
+    },
+    {
+      "identity": {
+        "kind": "global",
+        "key": {}
+      },
+      "canonical": "{\"key\":{},\"kind\":\"global\"}",
+      "expected": "5186f97a866424e44f9a4b92fb585ed72890b7dc41632d3297670b5633373040"
+    }
+  ]
+}
