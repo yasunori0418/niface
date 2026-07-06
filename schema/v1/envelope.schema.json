@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/yasunori0418/niface/schema/v1/envelope.schema.json",
   "title": "niface envelope (specVersion 1)",
-  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。single / batch を問わずトップレベルは results[] を持つ。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
+  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。トップレベルは常に results[](主体ごとの結果)を持つ。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["specVersion", "tool", "command", "mode", "status", "dryRun", "startedAt", "finishedAt", "results"],
+  "required": ["specVersion", "tool", "command", "status", "dryRun", "startedAt", "finishedAt", "results"],
   "properties": {
     "specVersion": { "type": "integer", "const": 1 },
     "tool": {
@@ -18,10 +18,6 @@
       }
     },
     "command": { "type": "string", "minLength": 1 },
-    "mode": {
-      "description": "実行形態の判別子。起動の性質で決まり結果件数に依らない(--all は N=0/1 でも batch)",
-      "enum": ["single", "batch"]
-    },
     "status": {
       "description": "集約成否。results のいずれかが error、または主体列挙前の全体エラーがあれば error",
       "enum": ["success", "error"]
@@ -35,21 +31,11 @@
       "items": { "$ref": "#/$defs/error" }
     },
     "results": {
-      "description": "主体ごとの結果。single は 0〜1 要素、batch は 0 以上",
+      "description": "主体ごとの結果。0 以上の要素",
       "type": "array",
       "items": { "$ref": "#/$defs/subjectResult" }
     }
   },
-  "allOf": [
-    {
-      "if": { "properties": { "mode": { "const": "single" } }, "required": ["mode"] },
-      "then": { "properties": { "results": { "maxItems": 1 } } }
-    },
-    {
-      "if": { "properties": { "mode": { "const": "batch" } }, "required": ["mode"] },
-      "then": { "properties": { "results": { "items": { "required": ["subject"] } } } }
-    }
-  ],
   "$defs": {
     "id": {
       "description": "sha256(JCS(identity)) の lowercase hex",
@@ -81,10 +67,10 @@
       }
     },
     "subjectResult": {
-      "description": "results[] の要素。1 主体分の実行結果。subject は single では任意、batch では必須(トップの allOf で強制)",
+      "description": "results[] の要素。1 主体分の実行結果。subject は常時必須",
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "startedAt", "finishedAt", "result"],
+      "required": ["subject", "status", "startedAt", "finishedAt", "result"],
       "properties": {
         "subject": { "$ref": "#/$defs/subject" },
         "status": { "enum": ["success", "error"] },

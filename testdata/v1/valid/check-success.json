@@ -5,13 +5,15 @@
     "version": "0.1.0"
   },
   "command": "check",
-  "mode": "single",
   "status": "success",
   "dryRun": true,
   "startedAt": "2026-07-05T12:34:56+09:00",
   "finishedAt": "2026-07-05T12:34:58+09:00",
   "results": [
     {
+      "subject": {
+        "name": "system"
+      },
       "status": "success",
       "startedAt": "2026-07-05T12:34:56+09:00",
       "finishedAt": "2026-07-05T12:34:58+09:00",

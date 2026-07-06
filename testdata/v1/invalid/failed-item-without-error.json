@@ -5,13 +5,15 @@
     "version": "0.9.0"
   },
   "command": "apply",
-  "mode": "single",
   "status": "error",
   "dryRun": false,
   "startedAt": "2026-07-05T12:34:56+09:00",
   "finishedAt": "2026-07-05T12:34:58+09:00",
   "results": [
     {
+      "subject": {
+        "name": "home"
+      },
       "status": "error",
       "startedAt": "2026-07-05T12:34:56+09:00",
       "finishedAt": "2026-07-05T12:34:58+09:00",
