@@ -5,6 +5,8 @@
 - 関連: `spec/v1/spec.md`（§2, §5）, `schema/v1/envelope.schema.json`, ADR-0004, ADR-0011
 - 改訂対象: ADR-0004（id 一意性の範囲を「ツール内」から `(tool.name, subject, id)` の 3 層参照キーに再定義）
 
+> **2026-07-07 改訂注記（ADR-0013）**: 本 ADR の subject 必須範囲（§2）が対象。subject（弱い識別子）の導入・id 非関与・3 層参照キーは不変。ただし `single` で任意だった subject を single/batch を問わず常時必須へ格上げし、§5 の参照キー `(tool.name, subject, id)` が single でも欠けない形へ整えた（→ ADR-0013）。
+
 ## 背景
 
 複数主体実行（→ ADR-0011）を入れると、「どの主体の結果か」を名指す手段が要る。加えて、操作の主体（例: nput の config 名）が引数に埋もれて出力に残らないという欠落が single モードにもある。一方で id 導出（`sha256(JCS(identity))`）に主体を混ぜると、identity が `{kind, key}` の 2 層から 3 層に変わり id-vectors・go / nix 実装の全面改訂（= 非互換）を招く。主体の表現と id 機構を分離する必要がある。

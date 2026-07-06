@@ -1,7 +1,7 @@
 package niface
 
 // エンベロープと構成型(specVersion 1)。
-// single / batch を問わずトップレベルは Results[] を持つ。
+// トップレベルは常に Results[] を持ち、各要素は主体を Subject で名指す。
 // ツール固有情報は Info の型パラメータで表現する。
 // ツールを知らない消費側は json.RawMessage を渡して規格部分だけを扱える。
 
@@ -10,13 +10,6 @@ type Status string
 const (
 	StatusSuccess Status = "success"
 	StatusError   Status = "error"
-)
-
-type Mode string
-
-const (
-	ModeSingle Mode = "single"
-	ModeBatch  Mode = "batch"
 )
 
 type ItemStatus string
@@ -75,9 +68,9 @@ type Result[TItem, TChange, TInfo any] struct {
 }
 
 // SubjectResult は Results[] の要素。1 主体分の実行結果。
-// Subject は single では任意(nil 可)、batch では必須。
+// Subject は single / batch を問わず常時必須。
 type SubjectResult[TItem, TChange, TInfo any] struct {
-	Subject    *Subject                      `json:"subject,omitempty"`
+	Subject    Subject                       `json:"subject"`
 	Status     Status                        `json:"status"`
 	StartedAt  string                        `json:"startedAt"`
 	FinishedAt string                        `json:"finishedAt"`
@@ -89,7 +82,6 @@ type Envelope[TItem, TChange, TInfo any] struct {
 	SpecVersion int                                    `json:"specVersion"`
 	Tool        Tool                                   `json:"tool"`
 	Command     string                                 `json:"command"`
-	Mode        Mode                                   `json:"mode"`
 	Status      Status                                 `json:"status"`
 	DryRun      bool                                   `json:"dryRun"`
 	StartedAt   string                                 `json:"startedAt"`
