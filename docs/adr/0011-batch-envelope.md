@@ -5,6 +5,8 @@
 - 関連: `spec/v1/spec.md`（§2, §5）, `schema/v1/envelope.schema.json`, ADR-0001, ADR-0002, ADR-0006, ADR-0007
 - 改訂対象: ADR-0001（ペイロードの容器を `result` 単数から `results[]` に一般化）, ADR-0002（status 集約を results[] 全体へ拡張）, ADR-0006（全体エラーの置き場に解決済み主体の subjectResult.errors 層を追加）
 
+> **2026-07-07 改訂注記（ADR-0013）**: 本 ADR の判別子 `mode`（§2）が対象。常時 `results[]` の容器統一・status 集約・subjectResult 層は不変。ただし判別子 `mode` と single/batch の条件分岐（`single` は maxItems:1 / `batch` は subject 必須）を除去し、subject を全 subjectResult で常時必須化した（→ ADR-0013）。
+
 ## 背景
 
 現行エンベロープは「1 実行 = 1 論理操作 = 1 result」を暗黙前提とし、単一主体しか表せない。nput `apply --all`（1 実行 = N 個の独立 config への配置）や、複数対象を束ねる将来ツール（nherd 等）はこれを表現できない。stdout の単一文書規律（§1・NDJSON 禁止）を保ったまま、複数主体の結果を 1 文書に並べる手段が要る。

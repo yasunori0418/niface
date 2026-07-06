@@ -18,6 +18,7 @@
 | [0010](adr/0010-camelcase-versioning-extension.md) | 命名・バージョニング・拡張ポリシーを定める |
 | [0011](adr/0011-batch-envelope.md) | エンベロープを常に results[] にし mode で単一/複数主体を表す |
 | [0012](adr/0012-subject-and-uniqueness-scope.md) | subject を弱い識別子として導入し §5 一意性を参照キー 3 層に再定義する |
+| [0013](adr/0013-remove-mode-and-require-subject.md) | mode 判別子を廃止し subject を常時必須にする |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
