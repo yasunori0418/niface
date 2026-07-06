@@ -109,8 +109,6 @@ python3 scripts/validate.py schema/v1/envelope.schema.json testdata/v1
 cd go && go test ./...
 ```
 
-> **注意**: Go / Nix 実装は Go・Nix ツールチェーンのない環境で作成されたため未実行です。初回 push 前に `nix flake check` の通過を必ず確認してください。id-vectors.json 自体は Python 実装（JCS サブセット）で計算済みの実値です。
-
 ## 開発環境
 
 テンプレートを `.envrc` にコピーして direnv を許可する。`.envrc` は `dev/` の flake を読み込み（`use flake ./dev`）、開発ツールを入れて mattpocock/skills を nput の project mode で `.claude/skills/` へ配置する。
