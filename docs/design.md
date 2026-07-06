@@ -16,6 +16,8 @@
 | [0008](adr/0008-posix-exit-code.md) | exit code は POSIX 慣行のまま status と連動させる |
 | [0009](adr/0009-dryrun-schema-parity.md) | dry-run は apply と同一スキーマで出力する |
 | [0010](adr/0010-camelcase-versioning-extension.md) | 命名・バージョニング・拡張ポリシーを定める |
+| [0011](adr/0011-batch-envelope.md) | エンベロープを常に results[] にし mode で単一/複数主体を表す |
+| [0012](adr/0012-subject-and-uniqueness-scope.md) | subject を弱い識別子として導入し §5 一意性を参照キー 3 層に再定義する |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 

@@ -1,13 +1,13 @@
 {
   "specVersion": 1,
   "tool": {
-    "name": "nboot",
-    "version": "0.1.0"
+    "name": "nput",
+    "version": "0.9.0"
   },
-  "command": "check",
+  "command": "apply",
   "mode": "single",
   "status": "success",
-  "dryRun": true,
+  "dryRun": false,
   "startedAt": "2026-07-05T12:34:56+09:00",
   "finishedAt": "2026-07-05T12:34:58+09:00",
   "results": [
@@ -16,14 +16,15 @@
       "startedAt": "2026-07-05T12:34:56+09:00",
       "finishedAt": "2026-07-05T12:34:58+09:00",
       "result": {
-        "items": [
-          {
-            "id": "895da5a1a51d63456a4b5b88b0b0ba52646718d87c36edddec0c359ccf80286f",
-            "kind": "requirement",
-            "label": "esp-mounted",
-            "status": "success"
-          }
-        ]
+        "items": []
+      }
+    },
+    {
+      "status": "success",
+      "startedAt": "2026-07-05T12:34:56+09:00",
+      "finishedAt": "2026-07-05T12:34:58+09:00",
+      "result": {
+        "items": []
       }
     }
   ]

@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/yasunori0418/niface/schema/v1/envelope.schema.json",
   "title": "niface envelope (specVersion 1)",
-  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
+  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。single / batch を問わずトップレベルは results[] を持つ。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["specVersion", "tool", "command", "status", "dryRun", "startedAt", "finishedAt", "result"],
+  "required": ["specVersion", "tool", "command", "mode", "status", "dryRun", "startedAt", "finishedAt", "results"],
   "properties": {
     "specVersion": { "type": "integer", "const": 1 },
     "tool": {
@@ -18,26 +18,38 @@
       }
     },
     "command": { "type": "string", "minLength": 1 },
-    "status": { "enum": ["success", "error"] },
+    "mode": {
+      "description": "実行形態の判別子。起動の性質で決まり結果件数に依らない(--all は N=0/1 でも batch)",
+      "enum": ["single", "batch"]
+    },
+    "status": {
+      "description": "集約成否。results のいずれかが error、または主体列挙前の全体エラーがあれば error",
+      "enum": ["success", "error"]
+    },
     "dryRun": { "type": "boolean" },
     "startedAt": { "type": "string", "format": "date-time" },
     "finishedAt": { "type": "string", "format": "date-time" },
     "errors": {
-      "description": "item に紐づかない全体エラーのみ。item 起因のエラーを置いてはならない",
+      "description": "主体の列挙・解決の前段で起きる全体エラーのみ(入力 parse 失敗・specVersion 不能・主体列挙自体の失敗等)。解決済み主体に紐づくエラーは subjectResult.errors に置く",
       "type": "array",
       "items": { "$ref": "#/$defs/error" }
     },
-    "result": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["items"],
-      "properties": {
-        "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
-        "changes": { "type": "array", "items": { "$ref": "#/$defs/change" } },
-        "info": { "type": "object" }
-      }
+    "results": {
+      "description": "主体ごとの結果。single は 0〜1 要素、batch は 0 以上",
+      "type": "array",
+      "items": { "$ref": "#/$defs/subjectResult" }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "mode": { "const": "single" } }, "required": ["mode"] },
+      "then": { "properties": { "results": { "maxItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "mode": { "const": "batch" } }, "required": ["mode"] },
+      "then": { "properties": { "results": { "items": { "required": ["subject"] } } } }
+    }
+  ],
   "$defs": {
     "id": {
       "description": "sha256(JCS(identity)) の lowercase hex",
@@ -57,6 +69,43 @@
         "code": { "$ref": "#/$defs/code" },
         "message": { "type": "string" },
         "detail": { "type": "object" }
+      }
+    },
+    "subject": {
+      "description": "操作の主体を名指す弱い識別子。id 導出には関与しない。name は 1 エンベロープ内で一意(producer MUST)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "subjectResult": {
+      "description": "results[] の要素。1 主体分の実行結果。subject は single では任意、batch では必須(トップの allOf で強制)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "startedAt", "finishedAt", "result"],
+      "properties": {
+        "subject": { "$ref": "#/$defs/subject" },
+        "status": { "enum": ["success", "error"] },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "finishedAt": { "type": "string", "format": "date-time" },
+        "errors": {
+          "description": "この主体に紐づく全体エラー(この主体の item に紐づかないもの。例: この主体の profile lock 取得失敗)",
+          "type": "array",
+          "items": { "$ref": "#/$defs/error" }
+        },
+        "result": { "$ref": "#/$defs/result" }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+        "changes": { "type": "array", "items": { "$ref": "#/$defs/change" } },
+        "info": { "type": "object" }
       }
     },
     "item": {

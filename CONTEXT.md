@@ -8,8 +8,8 @@ n プレフィックスツール群（nput / nboot / nwrap / nherd / nshadow / n
 
 ### エンベロープと最上位
 
-**エンベロープ (envelope)**: 全ツールが stdout に出す**単一の valid JSON 文書**。メタ情報を最上位に、実行ペイロードを `result` 配下に入れ子で持つ（→ ADR-0001）。stdout に出すのはこれ 1 つだけで、進捗・ログ・診断は stderr に逃がす。
-_Avoid_: 「レスポンス」「複数行 JSON / NDJSON」（stdout は単一文書）。
+**エンベロープ (envelope)**: 全ツールが stdout に出す**単一の valid JSON 文書**。メタ情報を最上位に、実行ペイロードを `results[]`（主体ごとの subjectResult）配下に入れ子で持つ。single / batch を問わず容器は常に `results[]`（→ ADR-0001, ADR-0011）。stdout に出すのはこれ 1 つだけで、進捗・ログ・診断は stderr に逃がす。
+_Avoid_: 「レスポンス」「複数行 JSON / NDJSON」（stdout は単一文書）; `result` 単数の容器（`results[]` に一般化済み）。
 
 **specVersion**: エンベロープの規格バージョン。整数。互換変更（フィールド追加）では上げず、削除・意味変更・必須化でのみ上げる（→ ADR-0010）。
 _Avoid_: semver 文字列。
@@ -20,13 +20,13 @@ _Avoid_: `partial` などの中間値。
 **dryRun**: plan / dry-run を表す最上位の boolean。`true` の出力は値以外において apply と同一スキーマ（→ ADR-0009）。
 _Avoid_: plan 専用の別スキーマ・別 result 型。
 
-**errors[]**: 最上位のエラー配列。**item に紐づかない全体エラーのみ**（入力 parse 失敗・lock 取得失敗等）を置く。item 起因のエラーは置かない（→ ADR-0006）。
-_Avoid_: 全 item エラーの集約ビューをここに持たせること。
+**errors[]**: 最上位のエラー配列。**主体の列挙・解決の前段で起きる全体エラーのみ**（入力 parse 失敗・specVersion 不能・主体列挙自体の失敗等）を置く。解決済み主体に紐づくエラーは `subjectResult.errors` に置く（→ ADR-0006, ADR-0011）。
+_Avoid_: 全 item エラーの集約ビューをここに持たせること; 解決済み主体の lock 取得失敗等をここに置くこと（subjectResult.errors が正）。
 
 ### ペイロード
 
-**result**: 実行ペイロードのコンテナ。`items` / `changes` / `info` を持つ（→ ADR-0001）。
-_Avoid_: items / changes を最上位に平置きすること。
+**result**: 1 主体分の実行ペイロードのコンテナ。`items` / `changes` / `info` を持ち、各 subjectResult の下に 1 つ置かれる（→ ADR-0001, ADR-0011）。
+_Avoid_: items / changes を最上位に平置きすること; `results[]`（主体の配列）と混同すること。
 
 **item**: `result.items[]` の要素。**処理単位の実行結果の記録**。規格が共通型を強制する。`id` / `kind` / `status` を必須に持つ（→ ADR-0003）。
 _Avoid_: item に差分（可逆性）を持たせること（差分は change の領分）。
@@ -38,6 +38,20 @@ _Avoid_: noop（差分の無い項目）を列挙すること。
 
 **info**: ツール固有情報の唯一の置き場所。item / change / result の 3 箇所に同じパターンで存在する。規格型は `additionalProperties: false` で閉じ、ツール固有は必ず `info` 配下に隔離する（→ ADR-0007）。
 _Avoid_: ツール固有フィールドを規格フィールドと同一階層に混ぜること。
+
+### 複数主体（batch）と subject
+
+**mode**: 実行形態の判別子。`single`（単一主体）/ `batch`（複数主体）の 2 値で必須。唯一の判別子であり、起動の性質で決まる（`apply --all` は対象 0 / 1 個でも `batch`）。結果の件数で切り替えない（→ ADR-0011）。
+_Avoid_: `result` / `results` の有無を判別子にすること; 件数で mode を決めること。
+
+**batch**: 複数主体を 1 実行で扱う `mode`。`results[]` に主体ごとの subjectResult を並べる。同一 tool・同一 command が構造的に保証される（複数ツールの束ねは ncompose の領分で別形状）（→ ADR-0011）。
+_Avoid_: NDJSON / 複数文書で主体を並べること; batch に複数ツールを混載すること。
+
+**subjectResult**: `results[]` の要素。1 主体分の実行結果（`subject?` / `status` / `startedAt` / `finishedAt` / `errors?` / `result`）。specVersion / tool / command / mode / dryRun は持たず最上位にのみ置く（→ ADR-0011）。
+_Avoid_: subjectResult を単独の完全なエンベロープにすること（tool / command 等を要素に重複させない）。
+
+**subject**: 操作の主体を名指す弱い識別子（`{ name }`）。`batch` の各要素で必須、`single` では任意。`name` は 1 エンベロープ内で一意（producer MUST）。id 導出には関与しない。参照解決は `(tool.name, subject, id)` の 3 層で行う（→ ADR-0012）。
+_Avoid_: subject を id 導出（identity）に混ぜること; world-wide 一意を要求すること。
 
 ### identity と id
 

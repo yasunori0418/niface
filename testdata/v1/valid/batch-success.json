@@ -5,11 +5,11 @@
     "version": "0.9.0"
   },
   "command": "apply",
-  "mode": "single",
+  "mode": "batch",
   "status": "success",
   "dryRun": false,
   "startedAt": "2026-07-05T12:34:56+09:00",
-  "finishedAt": "2026-07-05T12:34:58+09:00",
+  "finishedAt": "2026-07-05T12:35:04+09:00",
   "results": [
     {
       "subject": {
@@ -17,7 +17,7 @@
       },
       "status": "success",
       "startedAt": "2026-07-05T12:34:56+09:00",
-      "finishedAt": "2026-07-05T12:34:58+09:00",
+      "finishedAt": "2026-07-05T12:34:59+09:00",
       "result": {
         "items": [
           {
@@ -29,7 +29,22 @@
               "target": ".zshrc",
               "method": "symlink"
             }
-          },
+          }
+        ],
+        "info": {
+          "generation": 42
+        }
+      }
+    },
+    {
+      "subject": {
+        "name": "work"
+      },
+      "status": "success",
+      "startedAt": "2026-07-05T12:35:00+09:00",
+      "finishedAt": "2026-07-05T12:35:04+09:00",
+      "result": {
+        "items": [
           {
             "id": "4f63987615f37911e2dbb1741f2d88ae288acf3ada4d5b625b54cd94f39429e3",
             "kind": "entry",
@@ -41,19 +56,8 @@
             }
           }
         ],
-        "changes": [
-          {
-            "kind": "modify",
-            "itemId": "2ba0b24fb64819dfe4bab60dd153fe5a636bdd5a7535d32039c1fe24736f97f8",
-            "reversible": true,
-            "info": {
-              "oldSrc": "/nix/store/aaa-zshrc",
-              "newSrc": "/nix/store/bbb-zshrc"
-            }
-          }
-        ],
         "info": {
-          "generation": 42
+          "generation": 7
         }
       }
     }
