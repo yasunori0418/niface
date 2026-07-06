@@ -3,7 +3,7 @@
 - ステータス: 採用
 - 日付: 2026-07-07
 - 関連: `spec/v1/spec.md`（§2, §5）, `schema/v1/envelope.schema.json`, ADR-0001, ADR-0002, ADR-0006, ADR-0007
-- 改訂対象: ADR-0001（ペイロードの容器を `result` 単数から `results[]` に一般化）, ADR-0002（status 集約を results[] 全体へ拡張）
+- 改訂対象: ADR-0001（ペイロードの容器を `result` 単数から `results[]` に一般化）, ADR-0002（status 集約を results[] 全体へ拡張）, ADR-0006（全体エラーの置き場に解決済み主体の subjectResult.errors 層を追加）
 
 ## 背景
 

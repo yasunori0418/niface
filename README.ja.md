@@ -63,15 +63,23 @@ niface/
   "specVersion": 1,
   "tool": { "name": "nput", "version": "0.9.0" },
   "command": "apply",
+  "mode": "single",               // "single" | "batch"（--all 等は常に batch）
   "status": "success",            // "success" | "error"（2 値のみ）
   "dryRun": false,                // plan でもスキーマは apply と同一
   "startedAt": "...", "finishedAt": "...",
-  "errors": [],                   // item に紐づかない全体エラーのみ
-  "result": {
-    "items":   [ ... ],           // 処理単位の実行結果（1 件でも failed → error）
-    "changes": [ ... ],           // 差分の宣言（reversible を必ず持つ）
-    "info": { }                   // ツール固有はここだけ（items/changes 内も同様）
-  }
+  "errors": [],                   // 主体列挙・解決の前段の全体エラーのみ
+  "results": [                    // 主体ごとに subjectResult 1 つ（single: 0..1、batch: 0..N）
+    {
+      "subject": { "name": "home" },  // 操作の主体（batch では必須、single では任意）
+      "status": "success",
+      "startedAt": "...", "finishedAt": "...",
+      "result": {
+        "items":   [ ... ],       // 処理単位の実行結果（1 件でも failed → error）
+        "changes": [ ... ],       // 差分の宣言（reversible を必ず持つ）
+        "info": { }               // ツール固有はここだけ（items/changes 内も同様）
+      }
+    }
+  ]
 }
 ```
 

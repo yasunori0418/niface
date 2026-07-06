@@ -65,15 +65,23 @@ Every tool writes a single JSON document (the envelope) — and nothing else —
   "specVersion": 1,
   "tool": { "name": "nput", "version": "0.9.0" },
   "command": "apply",
+  "mode": "single",               // "single" | "batch" (--all etc. is always batch)
   "status": "success",            // "success" | "error" (only two values)
   "dryRun": false,                // a plan uses the same schema as apply
   "startedAt": "...", "finishedAt": "...",
-  "errors": [],                   // only whole-run errors not tied to an item
-  "result": {
-    "items":   [ ... ],           // per-unit execution results (one failed → error)
-    "changes": [ ... ],           // declared diffs (each always carries `reversible`)
-    "info": { }                   // tool-specific fields live only here (same inside items/changes)
-  }
+  "errors": [],                   // only pre-enumeration whole-run errors
+  "results": [                    // one subjectResult per subject (single: 0..1, batch: 0..N)
+    {
+      "subject": { "name": "home" },  // the operated subject (required in batch, optional in single)
+      "status": "success",
+      "startedAt": "...", "finishedAt": "...",
+      "result": {
+        "items":   [ ... ],       // per-unit execution results (one failed → error)
+        "changes": [ ... ],       // declared diffs (each always carries `reversible`)
+        "info": { }               // tool-specific fields live only here (same inside items/changes)
+      }
+    }
+  ]
 }
 ```
 
