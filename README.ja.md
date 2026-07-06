@@ -63,14 +63,13 @@ niface/
   "specVersion": 1,
   "tool": { "name": "nput", "version": "0.9.0" },
   "command": "apply",
-  "mode": "single",               // "single" | "batch"（--all 等は常に batch）
   "status": "success",            // "success" | "error"（2 値のみ）
   "dryRun": false,                // plan でもスキーマは apply と同一
   "startedAt": "...", "finishedAt": "...",
   "errors": [],                   // 主体列挙・解決の前段の全体エラーのみ
-  "results": [                    // 主体ごとに subjectResult 1 つ（single: 0..1、batch: 0..N）
+  "results": [                    // 主体ごとに subjectResult 1 つ（0..N。--all 等で複数になる）
     {
-      "subject": { "name": "home" },  // 操作の主体（batch では必須、single では任意）
+      "subject": { "name": "home" },  // 操作の主体（常に必須）
       "status": "success",
       "startedAt": "...", "finishedAt": "...",
       "result": {

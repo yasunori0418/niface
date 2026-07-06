@@ -65,14 +65,13 @@ Every tool writes a single JSON document (the envelope) — and nothing else —
   "specVersion": 1,
   "tool": { "name": "nput", "version": "0.9.0" },
   "command": "apply",
-  "mode": "single",               // "single" | "batch" (--all etc. is always batch)
   "status": "success",            // "success" | "error" (only two values)
   "dryRun": false,                // a plan uses the same schema as apply
   "startedAt": "...", "finishedAt": "...",
   "errors": [],                   // only pre-enumeration whole-run errors
-  "results": [                    // one subjectResult per subject (single: 0..1, batch: 0..N)
+  "results": [                    // one subjectResult per subject (0..N; --all etc. yields many)
     {
-      "subject": { "name": "home" },  // the operated subject (required in batch, optional in single)
+      "subject": { "name": "home" },  // the operated subject (always required)
       "status": "success",
       "startedAt": "...", "finishedAt": "...",
       "result": {
