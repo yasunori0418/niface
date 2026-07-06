@@ -6,28 +6,26 @@
   },
   "command": "apply",
   "mode": "single",
-  "status": "success",
+  "status": "error",
   "dryRun": false,
   "startedAt": "2026-07-05T12:34:56+09:00",
   "finishedAt": "2026-07-05T12:34:58+09:00",
   "results": [
     {
-      "status": "success",
+      "subject": {
+        "name": "home"
+      },
+      "status": "error",
       "startedAt": "2026-07-05T12:34:56+09:00",
       "finishedAt": "2026-07-05T12:34:58+09:00",
+      "errors": [
+        {
+          "code": "E_LOCK",
+          "message": "another apply is in progress"
+        }
+      ],
       "result": {
-        "items": [
-          {
-            "id": "entry:.zshrc",
-            "kind": "entry",
-            "label": ".zshrc",
-            "status": "success",
-            "info": {
-              "target": ".zshrc",
-              "method": "symlink"
-            }
-          }
-        ]
+        "items": []
       }
     }
   ]

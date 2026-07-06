@@ -4,6 +4,8 @@
 - 日付: 2026-07-05
 - 関連: `spec/v1/spec.md`（§5）, `testdata/v1/id-vectors.json`, `go/id.go`, `nix/lib.nix`
 
+> **2026-07-07 改訂注記（ADR-0012）**: 本 ADR の id 導出（identity = `{kind, key}` の sha256(JCS)）・安定性契約・key の MUST NOT は不変。id 一意性の「範囲はツール内」は `(tool.name, subject, id)` の 3 層参照キーに再定義された（`subject` は id 導出に関与しない・→ ADR-0012）。
+
 ## 背景
 
 item を世代・実行・plan/apply を跨いで同定する id が要る。「`種別:キー`」の文字列規約は、エスケープ・文字種・区切り文字衝突といった形式上の問題をツール実装者に押し付ける。

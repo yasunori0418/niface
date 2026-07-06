@@ -10,16 +10,44 @@
 
 ## 2. エンベロープ
 
+single / batch を問わず、トップレベルは常に `results[]`（主体ごとの結果の配列）を持つ。
+
 ```jsonc
 {
   "specVersion": 1,
   "tool": { "name": "nput", "version": "0.9.0" },
   "command": "apply",
-  "status": "success",                        // "success" | "error"
+  "mode": "single",                           // "single" | "batch"
+  "status": "success",                        // "success" | "error"（集約）
   "dryRun": false,
   "startedAt": "2026-07-05T12:34:56+09:00",   // RFC 3339
   "finishedAt": "2026-07-05T12:34:58+09:00",
-  "errors": [ Error, ... ],
+  "errors": [ Error, ... ],                   // 主体列挙・解決の前段エラーのみ
+  "results": [ SubjectResult, ... ]           // 主体ごとの結果
+}
+```
+
+- フィールド命名は camelCase とする
+- `specVersion` は整数。互換変更（フィールド追加）では増やさない。フィールドの削除・意味変更・必須化で増やす
+- `mode` は実行形態の判別子で `single`（単一主体）/ `batch`（複数主体）の 2 値。**唯一の判別子であり、その値が結果の形を決める**（MUST）。`mode` は**起動の性質**で決まり結果の件数に依らない（MUST）: 複数主体を扱う起動（例: `apply --all`）は主体が 0 / 1 個でも `batch` とする
+- `mode: "single"` の `results` は**高々 1 要素**（0 または 1）でなければならない（MUST）。`mode: "batch"` の `results` は 0 以上
+- `status` は 2 値。**`results` のいずれかの主体が `error`、または主体列挙・解決の前段で全体エラーがあれば `error`** としなければならない（MUST）。`results` が空でエラーも無ければ `success`（対象 0 件の `batch` は success）
+- `dryRun` はエンベロープ全体の性質で、`results` の全主体で均一とする（MUST）。`tool` / `command` / `mode` / `specVersion` もトップレベルにのみ置き、主体ごとに変えない
+- `dryRun: true` の出力は、`dryRun` の値以外において apply と同一スキーマでなければならない（MUST）
+- トップレベル `errors[]` には**主体の列挙・解決の前段で起きる全体エラーのみ**を置く（入力 parse 失敗・specVersion 不能・主体列挙自体の失敗等）。解決済み主体に紐づくエラーを置いてはならない（MUST NOT）
+- 消費側は未知フィールドを無視しなければならない（MUST / must-ignore）
+
+### SubjectResult
+
+`results[]` の要素。1 主体分の実行結果。
+
+```jsonc
+{
+  "subject": { "name": "home" },              // 主体。batch では必須、single では任意
+  "status": "success",                        // "success" | "error"
+  "startedAt": "2026-07-05T12:34:56+09:00",   // この主体の実行時刻
+  "finishedAt": "2026-07-05T12:34:58+09:00",
+  "errors": [ Error, ... ],                   // この主体に紐づく全体エラー（任意）
   "result": {
     "items":   [ Item, ... ],
     "changes": [ Change, ... ],
@@ -28,12 +56,9 @@
 }
 ```
 
-- フィールド命名は camelCase とする
-- `specVersion` は整数。互換変更（フィールド追加）では増やさない。フィールドの削除・意味変更・必須化で増やす
-- `status` は 2 値。**1 件でも item が failed であれば `error`** としなければならない（MUST）
-- `dryRun: true` の出力は、`dryRun` の値以外において apply と同一スキーマでなければならない（MUST）
-- トップレベル `errors[]` には **item に紐づかない全体エラーのみ**を置く（入力 parse 失敗・lock 取得失敗等）。item 起因のエラーを置いてはならない（MUST NOT）
-- 消費側は未知フィールドを無視しなければならない（MUST / must-ignore）
+- `subject` は操作の主体を名指す弱い識別子。`batch` の各要素では必須（MUST）、`single` では任意。`subject.name` は 1 エンベロープ内で一意でなければならない（producer MUST）。`subject` は id 導出に関与しない（§5）
+- `subject.status` が `error` になるのは、その主体の item が 1 件でも `failed`、またはその主体に紐づく全体エラー（例: その主体の lock 取得失敗）があるときである（MUST）
+- `errors[]` にはその主体に紐づく全体エラー（その主体の item に紐づかないもの）を置く。item 起因のエラーを置いてはならない（MUST NOT）
 
 ## 3. Item
 
@@ -57,11 +82,12 @@
 ### Error / Warning
 
 ```jsonc
-{ "code": "E_NPUT_COLLISION", "message": "...", "detail": { } }
-{ "code": "W_IRREVERSIBLE",   "message": "...", "detail": { } }
+{ "code": "E_NPUT_COLLISION",       "message": "...", "detail": { } }
+{ "code": "W_NPUT_FOREIGN_SYMLINK", "message": "...", "detail": { } }
 ```
 
 - `code` は §6 の命名規則に従う文字列。`detail` は任意のツール固有構造
+- 可逆性は warning で運ばない。差分が巻き戻し可能かは `change.reversible` が運ぶ（§4）。消費側はそれを警告として扱ってよい
 
 ## 4. Change
 
@@ -90,7 +116,9 @@ id       = lowercase-hex( sha256( JCS( identity ) ) )
 - ツールが定めるのは identity の中身のみ。key は対象の**宣言上の同一性を表す最小の値集合**としなければならない（MUST）
 - key にビルド毎・実行毎に変わる値（store パス・タイムスタンプ・世代番号）を含めてはならない（MUST NOT）
 - 同一対象の id は世代・実行・plan/apply を跨いで不変でなければならない（MUST）。違反はツールの欠陥として扱う
-- 一意性の範囲はツール内。複数ツールの集約時はエンベロープの `tool.name` で修飾する
+- `subject` は id 導出に関与しない。id の入力は identity（`{kind, key}`）のみである
+- 一意性と参照解決は 3 層で修飾する: id は **1 主体（`subject`）の `result` 内**で一意、`subject` が `tool` 内で修飾、`tool.name` が複数ツール集約時に修飾する。消費側は `(tool.name, subject, id)` の 3 つ組で参照を解決する。同一 identity の id は主体を跨いで衝突してよい（同じ論理対象を表すため当然である）
+- `changes[].itemId` は**同じ `result`（同一 subjectResult）内**の item を参照しなければならない（MUST）。`result` を跨いで参照してはならない（MUST NOT）
 
 ## 6. エラーコード
 
