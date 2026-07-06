@@ -111,8 +111,6 @@ python3 scripts/validate.py schema/v1/envelope.schema.json testdata/v1
 cd go && go test ./...
 ```
 
-> **Note**: the Go / Nix implementations were authored in an environment without the Go and Nix toolchains, so they are **unrun**. Confirm that `nix flake check` passes before the first push. The `id-vectors.json` values themselves are real values computed by the Python implementation (a JCS subset).
-
 ## Development environment
 
 Copy the template `.envrc` and allow direnv. It loads the flake under `dev/` (`use flake ./dev`), which installs the dev tooling and places mattpocock/skills into `.claude/skills/` via nput's project mode.
