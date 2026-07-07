@@ -23,6 +23,8 @@
 | [0015](adr/0015-generation-observation-slot.md) | subjectResult に観測型の世代遷移スロット generation を追加する |
 | [0016](adr/0016-changes-completeness-on-partial-failure.md) | 部分失敗時も適用済み changes を必ず出力する |
 | [0017](adr/0017-best-effort-envelope-on-interruption.md) | 中断時は best-effort でエンベロープを出力する |
+| [0018](adr/0018-envelope-info-slot.md) | エンベロープ直下にツール固有 info の置き場を追加する |
+| [0019](adr/0019-envelope-warnings-and-warning-type.md) | 上位 warnings[] を追加し warning 型を error から分離する |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 

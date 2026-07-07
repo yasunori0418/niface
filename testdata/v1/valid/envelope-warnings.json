@@ -1,0 +1,53 @@
+{
+  "specVersion": 1,
+  "tool": {
+    "name": "nput",
+    "version": "0.9.0"
+  },
+  "command": "apply",
+  "status": "success",
+  "dryRun": false,
+  "startedAt": "2026-07-07T22:10:00+09:00",
+  "finishedAt": "2026-07-07T22:10:02+09:00",
+  "warnings": [
+    {
+      "code": "W_NPUT_DEPRECATED_FLAG",
+      "message": "--force is deprecated; use --overwrite",
+      "detail": {
+        "flag": "--force"
+      }
+    }
+  ],
+  "results": [
+    {
+      "subject": {
+        "name": "home"
+      },
+      "status": "success",
+      "startedAt": "2026-07-07T22:10:00+09:00",
+      "finishedAt": "2026-07-07T22:10:02+09:00",
+      "warnings": [
+        {
+          "code": "W_NPUT_PROFILE_LEGACY_LAYOUT",
+          "message": "profile uses legacy layout"
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "2ba0b24fb64819dfe4bab60dd153fe5a636bdd5a7535d32039c1fe24736f97f8",
+            "kind": "entry",
+            "label": ".zshrc",
+            "status": "success",
+            "warnings": [
+              {
+                "code": "W_NPUT_FOREIGN_SYMLINK",
+                "message": "existing symlink was not created by nput"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -44,13 +44,20 @@ type Error struct {
 	Detail  map[string]any `json:"detail,omitempty"`
 }
 
+// Warning は警告。構造は Error と同形だが、code は W_ prefix に限定される（schema $defs/warning）。
+type Warning struct {
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Detail  map[string]any `json:"detail,omitempty"`
+}
+
 type Item[T any] struct {
 	ID       string     `json:"id"`
 	Kind     string     `json:"kind"`
 	Label    string     `json:"label,omitempty"`
 	Status   ItemStatus `json:"status"`
 	Error    *Error     `json:"error,omitempty"`
-	Warnings []Error    `json:"warnings,omitempty"`
+	Warnings []Warning  `json:"warnings,omitempty"`
 	Info     T          `json:"info,omitempty"`
 }
 
@@ -85,10 +92,13 @@ type SubjectResult[TItem, TChange, TInfo any] struct {
 	StartedAt  string                        `json:"startedAt"`
 	FinishedAt string                        `json:"finishedAt"`
 	Errors     []Error                       `json:"errors,omitempty"`
+	Warnings   []Warning                     `json:"warnings,omitempty"`
 	Result     Result[TItem, TChange, TInfo] `json:"result"`
 }
 
-type Envelope[TItem, TChange, TInfo any] struct {
+// Envelope の Info は実行全体のツール固有情報（主体に紐づかないもの）。
+// 主体ごとのツール固有情報は Result.Info に置く。
+type Envelope[TItem, TChange, TInfo, TEnvInfo any] struct {
 	SpecVersion int                                    `json:"specVersion"`
 	Tool        Tool                                   `json:"tool"`
 	Command     string                                 `json:"command"`
@@ -97,5 +107,7 @@ type Envelope[TItem, TChange, TInfo any] struct {
 	StartedAt   string                                 `json:"startedAt"`
 	FinishedAt  string                                 `json:"finishedAt"`
 	Errors      []Error                                `json:"errors,omitempty"`
+	Warnings    []Warning                              `json:"warnings,omitempty"`
+	Info        TEnvInfo                               `json:"info,omitempty"`
 	Results     []SubjectResult[TItem, TChange, TInfo] `json:"results"`
 }

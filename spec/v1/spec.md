@@ -23,6 +23,8 @@
   "startedAt": "2026-07-05T12:34:56+09:00",   // RFC 3339
   "finishedAt": "2026-07-05T12:34:58+09:00",
   "errors": [ Error, ... ],                   // 主体列挙・解決の前段エラーのみ
+  "warnings": [ Warning, ... ],               // 実行全体の警告（任意）
+  "info": { },                                // ツール固有（実行全体。任意）
   "results": [ SubjectResult, ... ]           // 主体ごとの結果
 }
 ```
@@ -34,6 +36,9 @@
 - `dryRun` はエンベロープ全体の性質で、`results` の全主体で均一とする（MUST）。`tool` / `command` / `specVersion` もトップレベルにのみ置き、主体ごとに変えない
 - `dryRun: true` の出力は、`dryRun` の値以外において apply と同一スキーマでなければならない（MUST）
 - トップレベル `errors[]` には**主体の列挙・解決の前段で起きる全体エラーのみ**を置く（入力 parse 失敗・specVersion 不能・主体列挙自体の失敗等）。解決済み主体に紐づくエラーを置いてはならない（MUST NOT）
+- トップレベル `warnings[]` には**実行全体に関わる警告**（主体に紐づかないもの）を置いてよい（MAY）。解決済み主体に紐づく警告は `subjectResult.warnings` に、処理単位に紐づく警告は `item.warnings` に置く。warning は `status` の集約に影響しない
+- warning の `code` は `W_` prefix、error の `code` は `E_` prefix でなければならない（MUST・§6 の二層命名）。schema は `$defs/warning` / `$defs/error` の pattern でこれを強制する
+- トップレベル `info` はツール固有情報の置き場（任意）。**主体に紐づかない実行全体の情報**を置いてよい（MAY）。主体ごとのツール固有情報は `result.info` に置く。他の `info` と同様、ツール固有フィールドを規格フィールドと同一階層に追加してはならない（MUST）
 - 消費側は未知フィールドを無視しなければならない（MUST / must-ignore）
 
 ### SubjectResult
@@ -52,6 +57,7 @@
   "startedAt": "2026-07-05T12:34:56+09:00",   // この主体の実行時刻
   "finishedAt": "2026-07-05T12:34:58+09:00",
   "errors": [ Error, ... ],                   // この主体に紐づく全体エラー（任意）
+  "warnings": [ Warning, ... ],               // この主体に紐づく警告（任意）
   "result": {
     "items":   [ Item, ... ],
     "changes": [ Change, ... ],
@@ -63,6 +69,7 @@
 - `subject` は操作の主体を名指す弱い識別子で、各 `results[]` 要素で必須（MUST）。`subject.name` は 1 エンベロープ内で一意でなければならない（producer MUST）。`subject` は id 導出に関与しない（§5）
 - `subject.status` が `error` になるのは、その主体の item が 1 件でも `failed`、またはその主体に紐づく全体エラー（例: その主体の lock 取得失敗）があるときである（MUST）
 - `errors[]` にはその主体に紐づく全体エラー（その主体の item に紐づかないもの）を置く。item 起因のエラーを置いてはならない（MUST NOT）
+- `warnings[]` にはその主体に紐づく警告（その主体の item に紐づかないもの）を置いてよい（MAY）。item 起因の警告は `item.warnings` に置く
 - `generation` は profile 世代遷移の**観測記録**（任意）。`profile` は実際に使用した profile のパスで、`generation` を出力する場合は必須。`before` / `after` は実行開始時点 / 終了時点で profile が指していた世代番号であり、観測できない場合はそれぞれ省略する（初回実行に `before` は無い。profile 未作成の plan には `after` も無い）。profile を管理するツールは `generation` を出力すべきである（SHOULD）
 - `generation` は作成の宣言ではなく観測の記録である。plan / dry-run では切替が起きないため `after` = `before` となる。新世代の作成は `before` ≠ `after` で判定する。世代番号は item id の導出に関与せず、key に含めてはならない原則（§5）は不変
 

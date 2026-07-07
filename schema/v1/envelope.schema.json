@@ -30,6 +30,15 @@
       "type": "array",
       "items": { "$ref": "#/$defs/error" }
     },
+    "warnings": {
+      "description": "実行全体に関わる警告(主体に紐づかないもの)。解決済み主体に紐づく警告は subjectResult.warnings に、処理単位に紐づく警告は item.warnings に置く",
+      "type": "array",
+      "items": { "$ref": "#/$defs/warning" }
+    },
+    "info": {
+      "description": "実行全体のツール固有情報(主体に紐づかないもの)。主体ごとのツール固有情報は result.info に置く",
+      "type": "object"
+    },
     "results": {
       "description": "主体ごとの結果。0 以上の要素",
       "type": "array",
@@ -42,17 +51,31 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
-    "code": {
-      "description": "共通コード E_<NAME> / W_<NAME>、またはツール別 E_<TOOL>_<NAME> / W_<TOOL>_<NAME>",
-      "type": "string",
-      "pattern": "^[EW]_[A-Z][A-Z0-9_]*$"
-    },
     "error": {
       "type": "object",
       "additionalProperties": false,
       "required": ["code", "message"],
       "properties": {
-        "code": { "$ref": "#/$defs/code" },
+        "code": {
+          "description": "共通コード E_<NAME>、またはツール別 E_<TOOL>_<NAME>",
+          "type": "string",
+          "pattern": "^E_[A-Z][A-Z0-9_]*$"
+        },
+        "message": { "type": "string" },
+        "detail": { "type": "object" }
+      }
+    },
+    "warning": {
+      "description": "警告。構造は error と同形だが code は W_ prefix に限定",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "description": "共通コード W_<NAME>、またはツール別 W_<TOOL>_<NAME>",
+          "type": "string",
+          "pattern": "^W_[A-Z][A-Z0-9_]*$"
+        },
         "message": { "type": "string" },
         "detail": { "type": "object" }
       }
@@ -93,6 +116,11 @@
           "type": "array",
           "items": { "$ref": "#/$defs/error" }
         },
+        "warnings": {
+          "description": "この主体に紐づく警告(この主体の item に紐づかないもの)",
+          "type": "array",
+          "items": { "$ref": "#/$defs/warning" }
+        },
         "result": { "$ref": "#/$defs/result" }
       }
     },
@@ -116,7 +144,7 @@
         "label": { "type": "string" },
         "status": { "enum": ["success", "failed", "skipped"] },
         "error": { "$ref": "#/$defs/error" },
-        "warnings": { "type": "array", "items": { "$ref": "#/$defs/error" } },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } },
         "info": { "type": "object" }
       },
       "allOf": [
