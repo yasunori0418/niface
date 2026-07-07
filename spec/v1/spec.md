@@ -89,7 +89,7 @@
 }
 ```
 
-- `skipped` は「前段の失敗による未実行」等に使う。dry-run では使わない（dry-run の items は「実行したら何をするか」を表し status は原則 success）
+- `skipped` は「前段の失敗による未実行」に**のみ**使わなければならない（MUST）。方針による不作為（restart 不要の判定、削除をしないという方針等）は判定処理の成功であり、`success` とした上で必要なら `warnings` / `info` で背景を運ぶ。dry-run では使わない（dry-run の items は「実行したら何をするか」を表し status は原則 success）
 - ツール固有フィールドは `info` 配下にのみ置く（MUST）。規格フィールドと同一階層に追加してはならない
 
 ### Error / Warning
