@@ -67,11 +67,21 @@ type Result[TItem, TChange, TInfo any] struct {
 	Info    TInfo             `json:"info,omitempty"`
 }
 
+// Generation は profile 世代遷移の観測記録。
+// Before / After は実行開始 / 終了時点で profile が指していた世代番号で、
+// 観測できない場合は nil（初回実行の Before・profile 未作成の plan の After）。
+type Generation struct {
+	Profile string `json:"profile"`
+	Before  *int   `json:"before,omitempty"`
+	After   *int   `json:"after,omitempty"`
+}
+
 // SubjectResult は Results[] の要素。1 主体分の実行結果。
 // Subject は single / batch を問わず常時必須。
 type SubjectResult[TItem, TChange, TInfo any] struct {
 	Subject    Subject                       `json:"subject"`
 	Status     Status                        `json:"status"`
+	Generation *Generation                   `json:"generation,omitempty"`
 	StartedAt  string                        `json:"startedAt"`
 	FinishedAt string                        `json:"finishedAt"`
 	Errors     []Error                       `json:"errors,omitempty"`

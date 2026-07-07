@@ -66,6 +66,17 @@
         "name": { "type": "string", "minLength": 1 }
       }
     },
+    "generation": {
+      "description": "profile 世代遷移の観測記録。before / after は実行開始 / 終了時点で profile が指していた世代番号(観測できない場合はそれぞれ省略)。plan / dry-run では after = before",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile"],
+      "properties": {
+        "profile": { "type": "string", "minLength": 1 },
+        "before": { "type": "integer", "minimum": 1 },
+        "after": { "type": "integer", "minimum": 1 }
+      }
+    },
     "subjectResult": {
       "description": "results[] の要素。1 主体分の実行結果。subject は常時必須",
       "type": "object",
@@ -74,6 +85,7 @@
       "properties": {
         "subject": { "$ref": "#/$defs/subject" },
         "status": { "enum": ["success", "error"] },
+        "generation": { "$ref": "#/$defs/generation" },
         "startedAt": { "type": "string", "format": "date-time" },
         "finishedAt": { "type": "string", "format": "date-time" },
         "errors": {

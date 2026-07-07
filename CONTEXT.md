@@ -50,6 +50,9 @@ _Avoid_: subjectResult を単独の完全なエンベロープにすること（
 **subject**: 操作の主体を名指す弱い識別子（`{ name }`）。各 `results[]` 要素で必須（→ ADR-0013）。`name` は 1 エンベロープ内で一意（producer MUST）。id 導出には関与しない。参照解決は `(tool.name, subject, id)` の 3 層で行う（→ ADR-0012）。
 _Avoid_: subject を id 導出（identity）に混ぜること; world-wide 一意を要求すること。
 
+**generation**: subjectResult の任意フィールド。profile 世代遷移の**観測記録**（`{ profile, before, after }`）。`before` / `after` は実行開始 / 終了時点で profile が指していた世代番号で、観測できない場合はそれぞれ省略する。plan / dry-run では `after` = `before`。新世代の作成は `before` ≠ `after` で判定する。id 導出には関与しない（→ ADR-0015）。
+_Avoid_: 「作成した世代」の宣言として扱うこと（観測の記録である）; 世代番号を identity / key に入れること（→ ADR-0004）。
+
 ### identity と id
 
 **identity**: item の**宣言上の同一性**を表す最小の値集合。`{ "kind": <string>, "key": <JSON value> }`。ツールが定めるのはこの中身のみ（→ ADR-0004）。

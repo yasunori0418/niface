@@ -20,6 +20,7 @@
 | [0012](adr/0012-subject-and-uniqueness-scope.md) | subject を弱い識別子として導入し §5 一意性を参照キー 3 層に再定義する |
 | [0013](adr/0013-remove-mode-and-require-subject.md) | mode 判別子を廃止し subject を常時必須にする |
 | [0014](adr/0014-scope-result-envelope-only.md) | 規格の領分を結果エンベロープに限定し世代表現を独立スキーマにしない |
+| [0015](adr/0015-generation-observation-slot.md) | subjectResult に観測型の世代遷移スロット generation を追加する |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
