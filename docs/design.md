@@ -25,6 +25,7 @@
 | [0017](adr/0017-best-effort-envelope-on-interruption.md) | 中断時は best-effort でエンベロープを出力する |
 | [0018](adr/0018-envelope-info-slot.md) | エンベロープ直下にツール固有 info の置き場を追加する |
 | [0019](adr/0019-envelope-warnings-and-warning-type.md) | 上位 warnings[] を追加し warning 型を error から分離する |
+| [0020](adr/0020-skipped-limited-to-preceding-failure.md) | skipped を前段の失敗による未実行に限定する |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
@@ -38,7 +39,8 @@ niface/
 │   ├── design.md     # 本書（設計概要 + ADR 索引）
 │   ├── adr/          # 設計判断の個別記録（ADR）
 │   ├── agents/       # エージェント向けの参照規約
-│   └── ecosystem/    # エコシステム中央ドキュメント
+│   ├── ecosystem/    # エコシステム中央ドキュメント
+│   └── guides/       # 実装者向けの指針（規範ではない）
 ├── spec/v1/          # 規範仕様（RFC 2119 語彙）
 ├── schema/v1/        # JSON Schema（機械可読の正）
 ├── testdata/v1/      # valid / invalid サンプル + id-vectors.json

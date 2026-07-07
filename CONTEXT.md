@@ -28,8 +28,8 @@ _Avoid_: 全 item エラーの集約ビューをここに持たせること; 解
 **result**: 1 主体分の実行ペイロードのコンテナ。`items` / `changes` / `info` を持ち、各 subjectResult の下に 1 つ置かれる（→ ADR-0001, ADR-0011）。
 _Avoid_: items / changes を最上位に平置きすること; `results[]`（主体の配列）と混同すること。
 
-**item**: `result.items[]` の要素。**処理単位の実行結果の記録**。規格が共通型を強制する。`id` / `kind` / `status` を必須に持つ（→ ADR-0003）。
-_Avoid_: item に差分（可逆性）を持たせること（差分は change の領分）。
+**item**: `result.items[]` の要素。**処理単位の実行結果の記録**。規格が共通型を強制する。`id` / `kind` / `status` を必須に持つ（→ ADR-0003）。status の `skipped` は**前段の失敗による未実行にのみ**使い、方針による不作為（restart 不要判定・削除をしない方針等）は判定処理の成功なので `success` + 必要なら `warnings` / `info` で表す（→ ADR-0020）。
+_Avoid_: item に差分（可逆性）を持たせること（差分は change の領分）; 方針による不作為を `skipped` で表すこと（`success` が正）。
 
 **change**: `result.changes[]` の要素。**状態遷移（差分）の宣言**。差分のある項目のみを列挙し、`reversible` を要素に必須で持つ。plan / apply の両方で出力する（→ ADR-0003）。
 apply では実際に生じた状態遷移の観測記録であり、item が `failed` でも生じた差分は列挙する。`status` が `error` で終わる実行でも、changes は適用済み差分を全て含める（producer MUST・→ ADR-0016）。
