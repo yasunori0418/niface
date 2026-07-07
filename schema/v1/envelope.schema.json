@@ -30,6 +30,10 @@
       "type": "array",
       "items": { "$ref": "#/$defs/error" }
     },
+    "info": {
+      "description": "実行全体のツール固有情報(主体に紐づかないもの)。主体ごとのツール固有情報は result.info に置く",
+      "type": "object"
+    },
     "results": {
       "description": "主体ごとの結果。0 以上の要素",
       "type": "array",

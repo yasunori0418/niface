@@ -88,7 +88,9 @@ type SubjectResult[TItem, TChange, TInfo any] struct {
 	Result     Result[TItem, TChange, TInfo] `json:"result"`
 }
 
-type Envelope[TItem, TChange, TInfo any] struct {
+// Envelope の Info は実行全体のツール固有情報（主体に紐づかないもの）。
+// 主体ごとのツール固有情報は Result.Info に置く。
+type Envelope[TItem, TChange, TInfo, TEnvInfo any] struct {
 	SpecVersion int                                    `json:"specVersion"`
 	Tool        Tool                                   `json:"tool"`
 	Command     string                                 `json:"command"`
@@ -97,5 +99,6 @@ type Envelope[TItem, TChange, TInfo any] struct {
 	StartedAt   string                                 `json:"startedAt"`
 	FinishedAt  string                                 `json:"finishedAt"`
 	Errors      []Error                                `json:"errors,omitempty"`
+	Info        TEnvInfo                               `json:"info,omitempty"`
 	Results     []SubjectResult[TItem, TChange, TInfo] `json:"results"`
 }
