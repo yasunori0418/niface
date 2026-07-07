@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-niface — n プレフィックスツール群(nput / nboot / nwrap / nherd / nshadow / ncompose)が stdout/stdin で会話するための共通 JSON 規格。規格(spec / schema / testdata)とエコシステム中央ドキュメント(docs/ecosystem/)の 2 つを持つ。
+niface — n プレフィックスツール群(nput / nboot / nwrap / nherd / nshadow / ncompose)の実行結果を単一の構造化 JSON(結果エンベロープ)として stdout に出力するための共通規格。規格(spec / schema / testdata)とエコシステム中央ドキュメント(docs/ecosystem/)の 2 つを持つ。
 
 ## ドキュメント
 
