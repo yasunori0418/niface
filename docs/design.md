@@ -21,6 +21,8 @@
 | [0013](adr/0013-remove-mode-and-require-subject.md) | mode 判別子を廃止し subject を常時必須にする |
 | [0014](adr/0014-scope-result-envelope-only.md) | 規格の領分を結果エンベロープに限定し世代表現を独立スキーマにしない |
 | [0015](adr/0015-generation-observation-slot.md) | subjectResult に観測型の世代遷移スロット generation を追加する |
+| [0016](adr/0016-changes-completeness-on-partial-failure.md) | 部分失敗時も適用済み changes を必ず出力する |
+| [0017](adr/0017-best-effort-envelope-on-interruption.md) | 中断時は best-effort でエンベロープを出力する |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
