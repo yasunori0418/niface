@@ -37,7 +37,7 @@ _Avoid_: noop（差分の無い項目）を列挙すること。
 
 **reversible**: change の属性。その差分単位で巻き戻し可能か。可逆性は**行為の属性**なので item ではなく change に置く（→ ADR-0003）。
 
-**info**: ツール固有情報の唯一の置き場所。item / change / result の 3 箇所に同じパターンで存在する。規格型は `additionalProperties: false` で閉じ、ツール固有は必ず `info` 配下に隔離する（→ ADR-0007）。
+**info**: ツール固有情報の唯一の置き場所。エンベロープ最上位 / result / item / change の 4 箇所に同じパターンで存在する。最上位には主体に紐づかない実行全体の情報、result には主体ごとの情報を置く。規格型は `additionalProperties: false` で閉じ、ツール固有は必ず `info` 配下に隔離する（→ ADR-0007, ADR-0018）。
 _Avoid_: ツール固有フィールドを規格フィールドと同一階層に混ぜること。
 
 ### 複数主体（batch）と subject
@@ -67,9 +67,12 @@ _Avoid_: 「`種別:キー`」形式の可読文字列 id。
 
 ### エラーコード
 
-**共通エラーコード**: 複数ツールで同じ意味で出しうるエラーの code。`E_<NAME>` 形式。初期 9 個で凍結し、追加は「2 つ以上のツールで必要」を条件とする（needs 駆動・→ ADR-0005）。
+**共通エラーコード**: 複数ツールで同じ意味で出しうるエラーの code。`E_<NAME>` 形式（警告は `W_<NAME>`）。初期 9 個で凍結し、追加は「2 つ以上のツールで必要」を条件とする（needs 駆動・→ ADR-0005）。
 
-**ツール別エラーコード**: そのツールの概念を知らないと意味が取れないエラーの code。`E_<TOOL>_<NAME>` 形式。警告は `W_` prefix（→ ADR-0005）。
+**ツール別エラーコード**: そのツールの概念を知らないと意味が取れないエラーの code。`E_<TOOL>_<NAME>` 形式。警告は `W_` prefix（`W_<TOOL>_<NAME>`・→ ADR-0005）。
+
+**warning**: 警告。構造は error と同形（`code` / `message` / `detail`）だが、`code` は `W_` prefix に限定され、schema は `$defs/warning` として error から型分離されている（→ ADR-0019）。エンベロープ最上位（実行全体）/ subjectResult（主体）/ item（処理単位）の 3 箇所に置け、責務分離は errors と同型。status の集約には影響しない。
+_Avoid_: warning の code に `E_` prefix、error の code に `W_` prefix を入れること（schema の pattern で拒否される）; 可逆性を warning で運ぶこと（`change.reversible` の領分）。
 
 ### 適合
 
