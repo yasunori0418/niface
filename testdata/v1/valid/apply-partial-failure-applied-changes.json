@@ -1,0 +1,65 @@
+{
+  "specVersion": 1,
+  "tool": {
+    "name": "nput",
+    "version": "0.9.0"
+  },
+  "command": "apply",
+  "status": "error",
+  "dryRun": false,
+  "startedAt": "2026-07-07T09:15:00+09:00",
+  "finishedAt": "2026-07-07T09:15:03+09:00",
+  "results": [
+    {
+      "subject": {
+        "name": "home"
+      },
+      "status": "error",
+      "startedAt": "2026-07-07T09:15:00+09:00",
+      "finishedAt": "2026-07-07T09:15:03+09:00",
+      "result": {
+        "items": [
+          {
+            "id": "2ba0b24fb64819dfe4bab60dd153fe5a636bdd5a7535d32039c1fe24736f97f8",
+            "kind": "entry",
+            "label": ".zshrc",
+            "status": "success",
+            "info": {
+              "target": ".zshrc",
+              "method": "symlink"
+            }
+          },
+          {
+            "id": "4f63987615f37911e2dbb1741f2d88ae288acf3ada4d5b625b54cd94f39429e3",
+            "kind": "entry",
+            "label": "init.lua",
+            "status": "failed",
+            "error": {
+              "code": "E_IO",
+              "message": "failed to create symlink after removing old target"
+            }
+          }
+        ],
+        "changes": [
+          {
+            "kind": "modify",
+            "itemId": "2ba0b24fb64819dfe4bab60dd153fe5a636bdd5a7535d32039c1fe24736f97f8",
+            "reversible": true,
+            "info": {
+              "oldSrc": "/nix/store/aaa-zshrc",
+              "newSrc": "/nix/store/bbb-zshrc"
+            }
+          },
+          {
+            "kind": "remove",
+            "itemId": "4f63987615f37911e2dbb1741f2d88ae288acf3ada4d5b625b54cd94f39429e3",
+            "reversible": true,
+            "info": {
+              "oldSrc": "/nix/store/aaa-init.lua"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

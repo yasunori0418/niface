@@ -109,6 +109,8 @@
 
 - **差分のある項目のみ**列挙する。noop を含めてはならない（MUST NOT）
 - `reversible: false` の差分を含む実行の巻き戻しは不完全となる。消費側はこれを警告として扱うべきである（SHOULD）
+- apply（`dryRun: false`）の changes は**実際に生じた状態遷移の観測記録**である。change を出すかどうかは item の status と独立に「現実が変化したか」で決まり、item が `failed` でも失敗までに現実が変化したなら対応する change を出力する。その `kind` は意図した遷移ではなく実際に生じた遷移を表し、`reversible` はその生じた遷移についてツールが判断する
+- apply では、`status` が `error` で終わる実行でも、`changes[]` は失敗時点までに実際に生じた差分を**全て**含めなければならない（MUST）。plan（`dryRun: true`）が error で終わる場合の changes の完全性は要求しない。check は副作用を持たないため対象外（§7）
 
 ## 5. Item id の導出
 
