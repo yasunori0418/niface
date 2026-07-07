@@ -32,6 +32,7 @@ _Avoid_: items / changes を最上位に平置きすること; `results[]`（主
 _Avoid_: item に差分（可逆性）を持たせること（差分は change の領分）。
 
 **change**: `result.changes[]` の要素。**状態遷移（差分）の宣言**。差分のある項目のみを列挙し、`reversible` を要素に必須で持つ。plan / apply の両方で出力する（→ ADR-0003）。
+apply では実際に生じた状態遷移の観測記録であり、item が `failed` でも生じた差分は列挙する。`status` が `error` で終わる実行でも、changes は適用済み差分を全て含める（producer MUST・→ ADR-0016）。
 _Avoid_: noop（差分の無い項目）を列挙すること。
 
 **reversible**: change の属性。その差分単位で巻き戻し可能か。可逆性は**行為の属性**なので item ではなく change に置く（→ ADR-0003）。
