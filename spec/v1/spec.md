@@ -7,6 +7,7 @@
 - ツールは stdout に**単一の valid JSON 文書（エンベロープ）のみ**を出力しなければならない（MUST）。複数文書・NDJSON・非 JSON の混在を禁止する
 - 進捗・ログ・診断は stderr に出力する（形式は自由）
 - exit code は POSIX 慣行に従う: 0 = 成功、非 0 = 失敗。トップレベル `status` と連動しなければならない（MUST）: `success` ⇔ 0、`error` ⇔ 非 0。消費側が依存してよいのはこの対応のみ
+- シグナル等により実行が中断された場合でも、ツールは可能な限り、中断時点までの `items` と適用済みの `changes` を含む valid なエンベロープを stdout に出力すべきである（SHOULD）。この場合 `status` は `error`、exit code は非 0 とする
 
 ## 2. エンベロープ
 
