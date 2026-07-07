@@ -2,9 +2,9 @@
 
 *Read this in [Japanese (日本語)](README.ja.md).*
 
-**n**-tools **i**nter**face** — a shared JSON specification that lets the Nix-based system-management tools (nput / nboot / nwrap / nherd / nshadow / ncompose) talk to each other over stdout / stdin.
+**n**-tools **i**nter**face** — a shared JSON specification for the Nix-based system-management tools (nput / nboot / nwrap / nherd / nshadow / ncompose): every tool reports its execution results to stdout as a single structured JSON document (the result envelope).
 
-In a UNIX-philosophy ecosystem where each tool has a single responsibility and they compose through pipes to form a distribution, niface defines "the bore of the plumbing." Any tool, written in any language, can join a pipeline as long as it conforms to the spec.
+In a UNIX-philosophy ecosystem where each tool has a single responsibility and they compose through pipes to form a distribution, niface defines the bore of the plumbing for result reporting. Any tool, written in any language, can join a pipeline as long as it conforms to the spec. The shape of each tool's *input* JSON is owned and published by that tool, not by this spec (see ADR-0014).
 
 This repository has two roles:
 
