@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-type rawEnvelope = Envelope[json.RawMessage, json.RawMessage, json.RawMessage]
+type rawEnvelope = Envelope[json.RawMessage, json.RawMessage, json.RawMessage, json.RawMessage]
 
 // id は sha256(JCS(identity)) の 64 文字 lowercase hex。
 var idPattern = regexp.MustCompile(`^[0-9a-f]{64}$`)
