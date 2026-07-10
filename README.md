@@ -49,9 +49,8 @@ niface/
 │   ├── valid/        #   samples that must pass the schema
 │   ├── invalid/      #   samples the schema must reject
 │   └── id-vectors.json  # identity → expected id table (the key to cross-language compatibility)
-├── go/               # Go reference implementation (envelope types + id derivation)
+├── go/               # Go reference implementation (envelope types + id derivation + conformance + niface-validate CLI)
 ├── nix/              # Nix implementation (id derivation)
-├── scripts/          # Validation scripts
 ├── dev/              # Development environment (devShell + mattpocock/skills placement)
 └── flake.nix
 ```
@@ -97,17 +96,17 @@ A tool is niface-conformant when:
 ## Validation
 
 ```sh
-nix flake check   # runs id-vectors (Nix impl) + schema (testdata) + go test
+nix flake check   # runs id-vectors (Nix impl) + go test (conformance + vectors)
 ```
 
 Individually:
 
 ```sh
-# Schema validation
-python3 scripts/validate.py schema/v1/envelope.schema.json testdata/v1
-
-# The Go implementation's vector test
+# The Go implementation's vector test + testdata conformance
 cd go && go test ./...
+
+# Validate a single envelope
+nix run .#validate -- path/to/envelope.json
 ```
 
 ## Development environment
