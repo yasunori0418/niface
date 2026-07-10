@@ -15,9 +15,9 @@ niface — n プレフィックスツール群(nput / nboot / nwrap / nherd / ns
 ## 検証コマンド
 
 ```sh
-nix flake check                    # id-vectors / schema / go を一括検証
-python3 scripts/validate.py schema/v1/envelope.schema.json testdata/v1
-cd go && go test ./...             # id-vectors 通過テスト
+nix flake check                    # id-vectors / go(適合検証 + ベクタ通過)を一括検証
+cd go && go test ./...             # id-vectors 通過 + testdata 適合検証
+nix run .#validate -- <file.json>  # 単一エンベロープを適合検証(niface-validate)
 ```
 
 `testdata/v1/id-vectors.json` が言語間互換の要。id 導出実装(go/・nix/)を触ったら必ず全ベクタ通過を確認する。

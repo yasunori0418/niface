@@ -28,6 +28,7 @@
 | [0020](adr/0020-skipped-limited-to-preceding-failure.md) | skipped を前段の失敗による未実行に限定する |
 | [0021](adr/0021-conformance-lint-for-schema-inexpressible-musts.md) | schema で表現しきれない MUST を適合検査（schema 強化 + リント）に取り込む |
 | [0022](adr/0022-sensitive-info-masking-guidance.md) | 機微情報を info / detail に生で載せない SHOULD を記録する |
+| [0023](adr/0023-go-conformance-validator-not-cue.md) | 適合検証を Go 実装に集約し単一ソース IDL（CUE）は採用しない |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
@@ -46,15 +47,14 @@ niface/
 ├── spec/v1/          # 規範仕様（RFC 2119 語彙）
 ├── schema/v1/        # JSON Schema（機械可読の正）
 ├── testdata/v1/      # valid / invalid サンプル + id-vectors.json
-├── go/               # Go 参照実装（型 + id 導出 + ベクタテスト）
+├── go/               # Go 参照実装（型 + id 導出 + 適合検証 + CLI niface-validate）
 ├── nix/              # Nix lib（id 導出・ベクタ検証）
-├── scripts/          # schema 検証 + MUST リント検査スクリプト（flake checks から使用）
 ├── dev/              # 開発環境（devShell + mattpocock/skills 配置）
-└── flake.nix         # checks: id-vectors / schema / go
+└── flake.nix         # checks: id-vectors / go、apps: validate
 ```
 
 - **正は JSON Schema**。文書とコードはそれに従う。
 - **id-vectors.json が最重要資産**: identity → 期待 id の対応表。JCS の罠（非 ASCII キー・数値表現・ネスト）を突くベクタを含め、全言語実装が CI でこれを通すことで導出の互換を証明する（→ ADR-0004）。
-- 参照方法は二経路: Go ツールは go module で型を共有（コンパイル時）、各ツールの flake が本リポジトリを input に取り schema 検証 + MUST リント検査 + id-vectors 適合を checks で回す（CI 時）。schema で表現しきれない MUST（status 整合・itemId 参照整合・一意性）は `scripts/validate.py` のリント層が担う（→ ADR-0021）。
+- 参照方法は二経路: Go ツールは go module で型を共有（コンパイル時）、各ツールの flake が本リポジトリを input に取り schema 検証 + MUST リント検査 + id-vectors 適合を checks で回す（CI 時）。schema で表現しきれない MUST（status 整合・itemId 参照整合・一意性）は `go/conformance` のリント層が担い、単一文書検証は CLI `niface-validate`（`nix run .#validate`）が提供する（→ ADR-0021, ADR-0023）。
 - バージョニング: specVersion 整数とディレクトリ（v1/）を一致させ、互換変更は v1 内 + git タグ、非互換変更のみ v2/ を新設する（→ ADR-0010）。
 - ツール固有の info schema は各ツールのリポジトリが管理する（規格側で抱えない・→ ADR-0007）。

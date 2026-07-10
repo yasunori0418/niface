@@ -53,8 +53,6 @@
               # 規格の参照実装・検証
               go
               gopls
-              python3
-              python3Packages.jsonschema
               # フェッチ済みリポジトリ配置（pin 版）
               inputs'.nput.packages.nput
             ];
