@@ -26,6 +26,7 @@
 | [0018](adr/0018-envelope-info-slot.md) | エンベロープ直下にツール固有 info の置き場を追加する |
 | [0019](adr/0019-envelope-warnings-and-warning-type.md) | 上位 warnings[] を追加し warning 型を error から分離する |
 | [0020](adr/0020-skipped-limited-to-preceding-failure.md) | skipped を前段の失敗による未実行に限定する |
+| [0022](adr/0022-sensitive-info-masking-guidance.md) | 機微情報を info / detail に生で載せない SHOULD を記録する |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
