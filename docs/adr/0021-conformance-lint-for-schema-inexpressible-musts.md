@@ -4,6 +4,8 @@
 - 日付: 2026-07-10
 - 関連: `spec/v1/spec.md`（§2, §5, §8）, `schema/v1/envelope.schema.json`, `scripts/validate.py`, `testdata/v1/`, ADR-0002, ADR-0004, ADR-0006, ADR-0012
 
+> **2026-07-10 改訂注記（ADR-0023）**: 本 ADR の強制対象 MUST（status 整合・itemId 参照整合・一意性）と schema/lint の分担は不変。ただし適合検証の**参照実装**を `scripts/validate.py`（Python + jsonschema）から Go 実装（`santhosh-tekuri/jsonschema` + lint、`niface-validate` CLI）へ移し、Python は撤去した（→ ADR-0023）。
+
 ## 背景
 
 §8 は適合を「`schema/v1/` の JSON Schema 検証 + `testdata/v1/id-vectors.json` の全ベクタ通過」で定義する。しかし規格の MUST の一部は純 JSON Schema で表現できず、この定義を素通りする。
