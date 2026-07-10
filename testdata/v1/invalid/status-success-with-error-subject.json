@@ -1,0 +1,36 @@
+{
+  "specVersion": 1,
+  "tool": {
+    "name": "nput",
+    "version": "0.9.0"
+  },
+  "command": "apply",
+  "status": "success",
+  "dryRun": false,
+  "startedAt": "2026-07-05T12:34:56+09:00",
+  "finishedAt": "2026-07-05T12:34:58+09:00",
+  "results": [
+    {
+      "subject": {
+        "name": "home"
+      },
+      "status": "error",
+      "startedAt": "2026-07-05T12:34:56+09:00",
+      "finishedAt": "2026-07-05T12:34:58+09:00",
+      "result": {
+        "items": [
+          {
+            "id": "4f63987615f37911e2dbb1741f2d88ae288acf3ada4d5b625b54cd94f39429e3",
+            "kind": "entry",
+            "label": "init.lua",
+            "status": "failed",
+            "error": {
+              "code": "E_IO",
+              "message": "書き込みに失敗した"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

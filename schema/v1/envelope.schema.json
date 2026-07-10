@@ -45,6 +45,28 @@
       "items": { "$ref": "#/$defs/subjectResult" }
     }
   },
+  "allOf": [
+    {
+      "$comment": "§2 status 集約: status=error は errors 非空、または status=error の result を要する",
+      "if": { "properties": { "status": { "const": "error" } } },
+      "then": {
+        "anyOf": [
+          { "required": ["errors"], "properties": { "errors": { "minItems": 1 } } },
+          { "properties": { "results": { "contains": { "properties": { "status": { "const": "error" } } } } } }
+        ]
+      }
+    },
+    {
+      "$comment": "§2 status 集約: status=success は errors 空かつ error 主体なしを要する",
+      "if": { "properties": { "status": { "const": "success" } } },
+      "then": {
+        "properties": {
+          "errors": { "maxItems": 0 },
+          "results": { "not": { "contains": { "properties": { "status": { "const": "error" } } } } }
+        }
+      }
+    }
+  ],
   "$defs": {
     "id": {
       "description": "sha256(JCS(identity)) の lowercase hex",
@@ -122,7 +144,29 @@
           "items": { "$ref": "#/$defs/warning" }
         },
         "result": { "$ref": "#/$defs/result" }
-      }
+      },
+      "allOf": [
+        {
+          "$comment": "§2 subject.status: error は failed item、または errors 非空を要する",
+          "if": { "properties": { "status": { "const": "error" } } },
+          "then": {
+            "anyOf": [
+              { "required": ["errors"], "properties": { "errors": { "minItems": 1 } } },
+              { "properties": { "result": { "properties": { "items": { "contains": { "properties": { "status": { "const": "failed" } } } } } } } }
+            ]
+          }
+        },
+        {
+          "$comment": "§2 subject.status: success は failed item を含まずかつ errors 空を要する",
+          "if": { "properties": { "status": { "const": "success" } } },
+          "then": {
+            "properties": {
+              "errors": { "maxItems": 0 },
+              "result": { "properties": { "items": { "not": { "contains": { "properties": { "status": { "const": "failed" } } } } } } }
+            }
+          }
+        }
+      ]
     },
     "result": {
       "type": "object",
