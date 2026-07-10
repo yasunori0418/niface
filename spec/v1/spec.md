@@ -181,7 +181,7 @@ id       = lowercase-hex( sha256( JCS( identity ) ) )
 
 ## 8. 適合
 
-- 本仕様への適合は、次の全てで判定する: (1) schema/v1/ の JSON Schema 検証を通ること、(2) schema で表現しきれない MUST を満たすこと、(3) testdata/v1/id-vectors.json の全ベクタ通過。(1)(2) の参照検証は scripts/validate.py が担う
+- 本仕様への適合は、次の全てで判定する: (1) schema/v1/ の JSON Schema 検証を通ること、(2) schema で表現しきれない MUST を満たすこと、(3) testdata/v1/id-vectors.json の全ベクタ通過。(1)(2) の参照検証は Go 実装(go/conformance、および単一文書 CLI の niface-validate)が担う
 - (2) の対象は次の MUST である。いずれも §2 / §5 に規範があり、JSON Schema では表現しきれないため検証はリント検査で行う
     - status と errors / item の整合（§2）: `status: "error"` は `errors[]` 非空、または `status: "error"` の主体（`item.status: "failed"` を含む主体）を伴う。`status: "success"` はその否定（`errors[]` 空かつ error 主体なし）。`subjectResult` も同型
     - `changes[].itemId` の同一 result 内参照整合（§5）: `itemId` は同じ `result` の `items[].id` を指す。`result` を跨いだ参照・不在の id 参照を含めてはならない
