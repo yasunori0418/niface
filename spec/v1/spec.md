@@ -102,6 +102,23 @@
 - `code` は §6 の命名規則に従う文字列。`detail` は任意のツール固有構造
 - 可逆性は warning で運ばない。差分が巻き戻し可能かは `change.reversible` が運ぶ（§4）。消費側はそれを警告として扱ってよい
 
+### 機微情報の扱い
+
+この節はエンベロープ内の全 `info` / `detail` スロット（最上位 `info`、`result.info`、`item.info`、`change.info`、`error.detail`、`warning.detail`）に横断的に適用する。
+
+- ツールは秘密・資格情報（パスワードハッシュ・秘密鍵・トークン等、非網羅）を、`info` / `detail` に生の値ではなくマスク・ダイジェスト（ハッシュ）参照・省略のいずれかで表すべきである（SHOULD）。手法はツールが文脈に応じて選ぶ。何が機微に当たるかはツールの文脈に依存する
+- 既にハッシュ化された値（例: crypt 形式のパスワードハッシュ）であっても、それ自体が機微であれば同様にマスク・ダイジェスト参照・省略のいずれかで表すべきである（SHOULD）
+- `change.info` の機微値をマスク・省略しても `change.reversible`（§4）の値は変わらない。可逆性はその遷移についてのツールの判断であり、公開された `info` 内の old / new 値ではなく、特権的・帯域外なアクセスに依拠してよい
+
+```jsonc
+{
+  "kind": "modify",
+  "itemId": "1f2e...c9",
+  "reversible": true,
+  "info": { "field": "passwordHash", "old": "***", "new": "***" }
+}
+```
+
 ## 4. Change
 
 `result.changes[]` の要素。状態遷移（差分）の宣言。plan / apply の両方で出力する。
