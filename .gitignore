@@ -1,3 +1,27 @@
+# ---- Go ----（github/gitignore の Go.gitignore ベース）
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+coverage.html
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directory: niface は buildGoModule + vendorHash で依存を解決し
+# vendor はコミットしない（→ ADR-0023）。誤コミット防止のため無視する。
+vendor/
+
 # ---- Nix ----
 # nix build の out-link
 result
