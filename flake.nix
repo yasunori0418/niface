@@ -107,12 +107,15 @@
             in
             pkgs.runCommand "niface-schema-check" { } ''
               set -euo pipefail
-              files=$(find ${testdataDir} -type f -name '*.json' | sort)
-              if [ -z "$files" ]; then
+              # 対象 0 件はガード(-print -quit で 1 件見つけ次第打ち切る)。
+              if [ -z "$(find ${testdataDir} -type f -name '*.json' -print -quit)" ]; then
                 echo "niface: ${testdataDir} 配下に検証対象の *.json が見つかりません" >&2
                 exit 2
               fi
-              ${niface-go}/bin/validate -schema ${./schema/v1/envelope.schema.json} $files
+              # 検証本体は NUL 区切りで渡し、ファイル名の空白・グロブ・改行に頑健にする。
+              # pipefail により validate の非 0 終了(schema 違反)は xargs 経由で伝播する。
+              find ${testdataDir} -type f -name '*.json' -print0 | sort -z \
+                | xargs -0 ${niface-go}/bin/validate -schema ${./schema/v1/envelope.schema.json}
               touch $out
             '';
         };
