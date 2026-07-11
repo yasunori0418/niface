@@ -36,9 +36,10 @@
       perSystem =
         { pkgs, ... }:
         let
-          # niface の Go 参照実装(CLI niface-validate)。定義は nix/package.nix に
-          # 括り出し、packages.validate / flake.lib.mkSchemaCheck と共有する。
-          niface-go = import ./nix/package.nix { inherit pkgs; };
+          # niface の Go 参照実装(CLI niface-validate)。定義は
+          # nix/pkgs/niface-validate.nix に括り出し、packages.validate /
+          # flake.lib.mkSchemaCheck と共有する。
+          niface-go = import ./nix/pkgs/niface-validate.nix { inherit pkgs; };
         in
         {
           packages.validate = niface-go;
@@ -102,7 +103,7 @@
           mkSchemaCheck =
             { pkgs, testdataDir }:
             let
-              niface-go = import ./nix/package.nix { inherit pkgs; };
+              niface-go = import ./nix/pkgs/niface-validate.nix { inherit pkgs; };
             in
             pkgs.runCommand "niface-schema-check" { } ''
               set -euo pipefail
