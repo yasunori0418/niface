@@ -36,23 +36,10 @@
       perSystem =
         { pkgs, ... }:
         let
-          # niface の Go 参照実装。cmd/validate(CLI niface-validate)をビルドし、
-          # build 時に go test ./...(id-vectors + testdata 適合検証)を走らせる。
-          # 依存は vendorHash で pin した FOD が取得する(vendor はコミットしない)。
-          niface-go = pkgs.buildGoModule {
-            pname = "niface-validate";
-            version = "0.1.0";
-            src = ./.;
-            modRoot = "go";
-            vendorHash = "sha256-qVoj03LNLbdoCUAOydK7oEHsuZ1BZ6Z2jwYB3gPOfrw=";
-            subPackages = [ "cmd/validate" ];
-            doCheck = true;
-            checkPhase = ''
-              runHook preCheck
-              go test ./...
-              runHook postCheck
-            '';
-          };
+          # niface の Go 参照実装(CLI niface-validate)。定義は
+          # nix/pkgs/niface-validate.nix に括り出し、packages.validate /
+          # flake.lib.mkSchemaCheck と共有する。
+          niface-go = import ./nix/pkgs/niface-validate.nix { inherit pkgs; };
         in
         {
           packages.validate = niface-go;
@@ -81,6 +68,14 @@
             # niface-go の build/checkPhase で go test ./... が走る。依存は
             # vendorHash で pin した FOD が取得するため vendor をコミットしない。
             go = niface-go;
+
+            # 適合ヘルパ mkSchemaCheck 自体の smoke test(dogfooding)。export した
+            # lib.mkSchemaCheck に niface の valid testdata を通し、検証器の配線・
+            # schema 注入・find 集約が壊れていないことを niface 自身の CI で固定する。
+            schema-selftest = inputs.self.lib.mkSchemaCheck {
+              inherit pkgs;
+              testdataDir = ./testdata/v1/valid;
+            };
           };
 
           # nix-unit: id 導出(nix/lib.nix)の値域・isAscii を評価テストで検証する。
@@ -97,8 +92,33 @@
         };
 
       flake = {
-        # niface 規格の参照実装(id 導出)。specVersion 1 の identity → id を導く。
-        lib = import ./nix/lib.nix { inherit (nixpkgs) lib; };
+        # niface 規格の参照ライブラリ。id 導出(nix/lib.nix)に、適合ヘルパ
+        # mkSchemaCheck を足して export する。
+        lib = (import ./nix/lib.nix { inherit (nixpkgs) lib; }) // {
+          # ツール側 testdata(自ツールの出力サンプル)を規格 schema で検証する
+          # check derivation を生成する。Go 検証器(niface-validate)をラップし、
+          # 呼び出し規約・依存(vendorHash)は niface 側に閉じる。呼び出し側は
+          #   niface.lib.mkSchemaCheck { inherit pkgs; testdataDir = ./testdata; }
+          # だけで済む。testdataDir 配下の *.json を再帰的に全て検証する。
+          mkSchemaCheck =
+            { pkgs, testdataDir }:
+            let
+              niface-go = import ./nix/pkgs/niface-validate.nix { inherit pkgs; };
+            in
+            pkgs.runCommand "niface-schema-check" { } ''
+              set -euo pipefail
+              # 対象 0 件はガード(-print -quit で 1 件見つけ次第打ち切る)。
+              if [ -z "$(find ${testdataDir} -type f -name '*.json' -print -quit)" ]; then
+                echo "niface: ${testdataDir} 配下に検証対象の *.json が見つかりません" >&2
+                exit 2
+              fi
+              # 検証本体は NUL 区切りで渡し、ファイル名の空白・グロブ・改行に頑健にする。
+              # pipefail により validate の非 0 終了(schema 違反)は xargs 経由で伝播する。
+              find ${testdataDir} -type f -name '*.json' -print0 | sort -z \
+                | xargs -0 ${niface-go}/bin/validate -schema ${./schema/v1/envelope.schema.json}
+              touch $out
+            '';
+        };
       };
     };
 }

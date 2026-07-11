@@ -93,6 +93,8 @@ A tool is niface-conformant when:
 2. **id-vectors**: its id-derivation implementation matches the expected values for every vector in `testdata/v1/id-vectors.json`.
 3. **standalone**: input comes only from stdin JSON or explicit arguments; it never implicitly discovers state or configuration (see spec §8).
 
+For a step-by-step guide to wiring this into your own tool (as a flake input or a Go module), see the [conformance guide](docs/guides/conformance.md).
+
 ## Validation
 
 ```sh
