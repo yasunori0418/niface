@@ -1,7 +1,7 @@
 {
   "specVersion": 1,
   "algorithm": "sha256(JCS(identity)) -> lowercase hex",
-  "note": "canonical はデバッグ用の参考値。適合判定は expected との一致のみで行う。JCS subset: 文字列/整数/bool/null/配列/オブジェクト(浮動小数は非対応)",
+  "note": "canonical はデバッグ用の参考値。適合判定は expected との一致のみで行う。identity 値域(spec §5): 文字列/整数±(2^53−1)/bool/null/配列/オブジェクト(メンバー名 ASCII)。数値は表記で判定し 1.0・1e3 等の小数/指数表記は域外。rejected は域外 identity で、実装は id 導出時に拒否する",
   "vectors": [
     {
       "identity": {
@@ -86,6 +86,82 @@
       },
       "canonical": "{\"key\":{},\"kind\":\"global\"}",
       "expected": "5186f97a866424e44f9a4b92fb585ed72890b7dc41632d3297670b5633373040"
+    },
+    {
+      "identity": {
+        "kind": "maxint",
+        "key": 9007199254740991
+      },
+      "canonical": "{\"key\":9007199254740991,\"kind\":\"maxint\"}",
+      "expected": "6d43a7e0ef4ce0d93e02b79571ceb9165144a9383c96a8bcbaa7bb0c0f83103e"
+    }
+  ],
+  "rejected": [
+    {
+      "identity": {
+        "kind": "n",
+        "key": 1.5
+      },
+      "reason": "非整数の数値は域外(MUST NOT)"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": {
+          "ratio": 0.25
+        }
+      },
+      "reason": "ネストした非整数数値も域外"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": 9007199254740992
+      },
+      "reason": "2^53 は安全整数域 ±(2^53−1) の外"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": -9007199254740992
+      },
+      "reason": "−2^53 は安全整数域 ±(2^53−1) の外"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": {
+          "キー": "v"
+        }
+      },
+      "reason": "オブジェクトのメンバー名は ASCII に限る(非 ASCII は域外)"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": {
+          "items": [
+            {
+              "🔑": 1
+            }
+          ]
+        }
+      },
+      "reason": "BMP 外を含むメンバー名も域外(attrset バイト順と UTF-16 順が食い違う)"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": 1.0
+      },
+      "reason": "小数点表記は域外(値が整数でも。数値は表記で判定する)"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": 1e3
+      },
+      "reason": "指数表記は域外(値が整数でも。数値は表記で判定する)"
     }
   ]
 }
