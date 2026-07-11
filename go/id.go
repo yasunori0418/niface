@@ -3,7 +3,8 @@
 // id 導出: id = lowercase-hex( sha256( JCS( identity ) ) )
 // JCS は RFC 8785。identity の値域は spec §5 に定める制約に従う:
 // 文字列(全 Unicode)/ 整数(±(2^53−1))/ bool / null / 配列 /
-// オブジェクト(メンバー名は ASCII)。非整数の数値・範囲外の整数・非 ASCII の
+// オブジェクト(メンバー名は ASCII)。数値は表記で判定し、浮動小数点(float64)・
+// 小数点/指数表記(1.0・1e3 等、値が整数でも)・範囲外の整数・非 ASCII の
 // メンバー名は域外として拒否する(エラーを返す)。制約された値域の上では
 // 本実装はフル JCS と一致する。
 package niface
@@ -11,8 +12,9 @@ package niface
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,9 +22,18 @@ import (
 )
 
 // maxSafeInteger は identity 整数値の値域上限 2^53−1(spec §5)。
-// IEEE 754 倍精度が正確に表せる整数の上限に一致させ、int / int64 / float64 の
+// IEEE 754 倍精度が正確に表せる整数の上限に一致させ、int / int64 / json.Number の
 // 各経路に同一の範囲ガードを課す。
 const maxSafeInteger = 1<<53 - 1
+
+// 値域違反を分類する sentinel error(errors.Is で判定可能)。具体値は %w で wrap する。
+var (
+	errFloatType    = errors.New("niface: floating-point number is not allowed in identity domain")
+	errNonInteger   = errors.New("niface: number must use integer notation (no fraction/exponent)")
+	errIntegerRange = errors.New("niface: integer is out of identity domain ±(2^53-1)")
+	errNonASCIIKey  = errors.New("niface: object member name must be ASCII")
+	errUnsupported  = errors.New("niface: unsupported type in identity domain")
+)
 
 // Identity は item id の導出元。
 type Identity struct {
@@ -41,7 +52,8 @@ func DeriveID(id Identity) (string, error) {
 	return hex.EncodeToString(sum[:]), nil
 }
 
-// canonicalize は RFC 8785 (JCS) サブセットの正準化を行う。
+// canonicalize は identity 値を spec §5 の値域制約のもとで JCS (RFC 8785) 正準化する。
+// 域外(浮動小数・非整数表記・範囲外整数・非 ASCII メンバー名・未対応型)はエラーを返す。
 func canonicalize(v any) (string, error) {
 	switch x := v.(type) {
 	case nil:
@@ -55,21 +67,31 @@ func canonicalize(v any) (string, error) {
 		return encodeString(x), nil
 	case int:
 		if int64(x) > maxSafeInteger || int64(x) < -maxSafeInteger {
-			return "", fmt.Errorf("niface: integer %d is out of identity domain ±(2^53-1)", x)
+			return "", fmt.Errorf("integer %d: %w", x, errIntegerRange)
 		}
 		return strconv.FormatInt(int64(x), 10), nil
 	case int64:
 		if x > maxSafeInteger || x < -maxSafeInteger {
-			return "", fmt.Errorf("niface: integer %d is out of identity domain ±(2^53-1)", x)
+			return "", fmt.Errorf("integer %d: %w", x, errIntegerRange)
 		}
 		return strconv.FormatInt(x, 10), nil
-	case float64:
-		// 整数値かつ安全整数域内の float は整数として表記(JCS 準拠)。
-		// 非整数・範囲外・NaN/Inf は域外(spec §5)。
-		if x == math.Trunc(x) && !math.IsInf(x, 0) && math.Abs(x) <= maxSafeInteger {
-			return strconv.FormatInt(int64(x), 10), nil
+	case json.Number:
+		// JSON 数値は表記で判定する(spec §5)。小数点・指数を持つ表記
+		// (1.0・1e3 等、値が整数でも)は域外。整数表記のみ ±(2^53−1) で受理。
+		s := x.String()
+		if strings.ContainsAny(s, ".eE") {
+			return "", fmt.Errorf("number %q: %w", s, errNonInteger)
 		}
-		return "", fmt.Errorf("niface: number %v is out of identity domain (non-integral or |x| > 2^53-1)", x)
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil || n > maxSafeInteger || n < -maxSafeInteger {
+			return "", fmt.Errorf("integer %q: %w", s, errIntegerRange)
+		}
+		return strconv.FormatInt(n, 10), nil
+	case float64:
+		// 浮動小数点数は identity に使えない(整数は int/int64/json.Number で表す)。
+		// encoding/json は 1 と 1.0 を共に float64 にするため、float64 型は表記情報を
+		// 持たず整数か判定できない。よって型として拒否する(spec §5・表記で判定)。
+		return "", fmt.Errorf("value %v: %w", x, errFloatType)
 	case []any:
 		parts := make([]string, len(x))
 		for i, e := range x {
@@ -84,7 +106,7 @@ func canonicalize(v any) (string, error) {
 		keys := make([]string, 0, len(x))
 		for k := range x {
 			if !isASCII(k) {
-				return "", fmt.Errorf("niface: object member name %q must be ASCII in identity domain", k)
+				return "", fmt.Errorf("object member name %q: %w", k, errNonASCIIKey)
 			}
 			keys = append(keys, k)
 		}
@@ -102,7 +124,7 @@ func canonicalize(v any) (string, error) {
 		}
 		return "{" + strings.Join(parts, ",") + "}", nil
 	default:
-		return "", fmt.Errorf("niface: unsupported type %T in JCS subset", v)
+		return "", fmt.Errorf("type %T: %w", v, errUnsupported)
 	}
 }
 
