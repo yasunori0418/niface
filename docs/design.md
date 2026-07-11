@@ -31,6 +31,7 @@
 | [0023](adr/0023-go-conformance-validator-not-cue.md) | 適合検証を Go 実装に集約し単一ソース IDL（CUE）は採用しない |
 | [0024](adr/0024-identity-value-domain.md) | item id の identity 値域を確定し域外を実装拒否とする |
 | [0025](adr/0025-format-assertion-conformance.md) | format 検証を assertion として規範化し適合検査の素通りを塞ぐ |
+| [0026](adr/0026-release-tagging-and-v1-stabilization.md) | リリースタグ運用(`v1.N.P` / `go/v1.N.P`)と v1 安定化基準を定める |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
@@ -58,5 +59,23 @@ niface/
 - **正は JSON Schema**。文書とコードはそれに従う。
 - **id-vectors.json が最重要資産**: identity → 期待 id の対応表。JCS の罠（非 ASCII の値・数値表記・ネスト）を突くベクタと、域外を突く `rejected`（非整数表記・範囲外整数・非 ASCII メンバー名）を含め、全言語実装が CI でこれを通すことで導出の互換を証明する（→ ADR-0004, ADR-0024）。
 - 参照方法は二経路: Go ツールは go module で型を共有（コンパイル時）、各ツールの flake が本リポジトリを input に取り schema 検証 + MUST リント検査 + id-vectors 適合を checks で回す（CI 時）。schema で表現しきれない MUST（status 整合・itemId 参照整合・一意性）は `go/conformance` のリント層が担い、単一文書検証は CLI `niface-validate`（`nix run .#validate`）が提供する（→ ADR-0021, ADR-0023）。
-- バージョニング: specVersion 整数とディレクトリ（v1/）を一致させ、互換変更は v1 内 + git タグ、非互換変更のみ v2/ を新設する（→ ADR-0010）。
+- バージョニング: specVersion 整数とディレクトリ（v1/）を一致させ、互換変更は v1 内 + リリースタグ、非互換変更のみ v2/ を新設する（詳細は「バージョニングとリリースタグ」節。→ ADR-0010, ADR-0026）。
 - ツール固有の info schema は各ツールのリポジトリが管理する（規格側で抱えない・→ ADR-0007）。
+
+## バージョニングとリリースタグ
+
+規格のバージョンは 2 つの独立した軸で管理する。
+
+- **`specVersion`（整数）**: 規格の**非互換**世代。フィールドの削除・意味変更・必須化でのみ増やし、そのとき `spec/v2/` を新設する。互換追加（フィールド追加）では上げない（→ ADR-0010）。
+- **リリースタグ（`v1.N.P` / `go/v1.N.P`）**: v1 系列内の**スナップショット識別子**。消費側が「どの時点の v1 か」を commit hash ではなくタグで参照できるようにする（→ ADR-0026）。
+
+リリースタグは同一コミットに 2 本を対で打つ。互換変更 PR のマージごとに打つ。
+
+- `v1.N.P` — 規格スナップショット（flake input / 人間用）。`N` = 規範面（spec / schema）への互換追加ごと、`P` = 規範に影響しない修正（実装 fix・testdata の追補/修正）。互換追加に付随する testdata は N に含み、単独の testdata 追補は P とする。
+- `go/v1.N.P` — 同一コミットの Go module 用ミラー。Go module はサブディレクトリ（`github.com/yasunori0418/niface/go`）にあり、prefix 無しの root タグは Go ツールチェーンから見えないため、`go/` prefix 付きタグが無いと pseudo-version 参照しかできない。
+
+`v1.N.P` は semver 形式だが、ADR-0010 が `specVersion` フィールドについて semver 文字列を棄却したこととは矛盾しない。両者はレイヤが異なる（specVersion = 非互換世代、タグ = リリーススナップショット識別子）。
+
+`flake.nix` の `packages.validate` の `version = "0.1.0"` は Go 参照実装の実装バージョンであり、規格タグ `v1.N.P` とは独立して増減する。
+
+**v1 stable 宣言**: 2 ツール適合（nput + 次ツール、M2 の nboot 想定）を基準とする。宣言時に README / overview の draft 表記を落とし、spec 英語版の要否を再検討する（→ ADR-0026）。
