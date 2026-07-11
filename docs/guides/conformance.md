@@ -29,12 +29,13 @@ niface を input に追加し、`lib.mkSchemaCheck` と `lib.verifyVectors` を 
     in
     {
       checks.${system} = {
-        # 自ツールの出力サンプル(testdata/ 配下の *.json)を規格 schema で検証する。
+        # 自ツールの「適合しているべき正のサンプル」を規格 schema で検証する。
         # 検証器(niface-validate)の呼び出し規約・依存は niface 側に閉じているため、
-        # 呼び出しは pkgs と testdataDir を渡すだけで済む。
+        # 呼び出しは pkgs と testdataDir を渡すだけで済む。testdataDir 配下の *.json は
+        # 全件が適合前提なので、不適合サンプルも持つなら valid 側だけを渡す。
         schema = niface.lib.mkSchemaCheck {
           inherit pkgs;
-          testdataDir = ./testdata;
+          testdataDir = ./testdata/valid;
         };
 
         # id 導出を Nix 側で niface.lib.deriveId に委ねる場合、その導出が
@@ -55,7 +56,7 @@ niface を input に追加し、`lib.mkSchemaCheck` と `lib.verifyVectors` を 
 }
 ```
 
-`mkSchemaCheck` は `testdataDir` 配下の `*.json` を再帰的に集め、全て規格 schema を通過すれば check が成功する。1 件でも違反すると derivation が失敗し、違反内容が build ログに出る。ここに置くのは「規格に適合しているべき正のサンプル」であり、`README.md` の valid サンプルと同じ位置付け。
+`mkSchemaCheck` は `testdataDir` 配下の `*.json` を再帰的に集め、全て規格 schema を通過すれば check が成功する。1 件でも違反すると derivation が失敗し、違反内容が build ログに出る。したがって渡すディレクトリには「規格に適合しているべき正のサンプル」だけを置く(`README.md` の valid サンプルと同じ位置付け)。niface 自身のように valid / invalid を分けて持つ場合は、上の例のように valid 側のディレクトリだけを `testdataDir` に渡す。invalid を混ぜると再帰収集で拾われ check が常に失敗する。
 
 id 導出を Go 側(go module 経路)で行うツールは、id-vectors の検証は go module のテストが担うため、`verifyVectors` の check は不要。
 
@@ -75,6 +76,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"time"
 
 	niface "github.com/yasunori0418/niface/go"
 )
@@ -85,6 +87,8 @@ type PutInfo struct {
 }
 
 func main() {
+	started := time.Now().Format(time.RFC3339)
+
 	// item id は identity({kind, key})から機械導出する。値域外(spec §5)は error。
 	id, err := niface.DeriveID(niface.Identity{Kind: "file", Key: "/etc/hosts"})
 	if err != nil {
@@ -93,15 +97,20 @@ func main() {
 
 	// Envelope は 4 つの型引数 [TItem, TChange, TInfo, TEnvInfo] を取る。
 	// 自ツールの info 型でパラメータ化して型付きで組み立てる。
+	// startedAt / finishedAt は必須で、RFC 3339 形式でないと適合検証で弾かれる(spec §2)。
 	env := niface.Envelope[PutInfo, struct{}, struct{}, struct{}]{
 		SpecVersion: 1,
 		Tool:        niface.Tool{Name: "nput", Version: "0.9.0"},
 		Command:     "apply",
 		Status:      niface.StatusSuccess,
+		StartedAt:   started,
+		FinishedAt:  time.Now().Format(time.RFC3339),
 		Results: []niface.SubjectResult[PutInfo, struct{}, struct{}]{
 			{
-				Subject: niface.Subject{Name: "home"},
-				Status:  niface.StatusSuccess,
+				Subject:    niface.Subject{Name: "home"},
+				Status:     niface.StatusSuccess,
+				StartedAt:  started,
+				FinishedAt: time.Now().Format(time.RFC3339),
 				Result: niface.Result[PutInfo, struct{}, struct{}]{
 					Items: []niface.Item[PutInfo]{
 						{ID: id, Kind: "file", Status: niface.ItemSuccess, Info: PutInfo{Target: "/etc/hosts"}},
