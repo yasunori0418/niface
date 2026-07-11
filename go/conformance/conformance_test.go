@@ -1,8 +1,10 @@
 package conformance
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -40,6 +42,43 @@ func TestValidTestdataConforms(t *testing.T) {
 		if fs := c.Check(doc); len(fs) > 0 {
 			t.Errorf("valid %s が違反を出した: %v", filepath.Base(p), fs)
 		}
+	}
+}
+
+// startedAt / finishedAt の RFC 3339 は format assertion で強制する（§2, §8, ADR-0025）。
+// Draft 2020-12 の既定（format = 注釈扱い）では素通りしてしまう不正日時が、schema 層で
+// 弾かれることを保証する。他フィールドは valid に保ち、日時 1 つだけを壊す。
+func TestFormatAssertionRejectsBadDateTime(t *testing.T) {
+	c := newChecker(t)
+	base := `{
+  "specVersion": 1,
+  "tool": { "name": "nput", "version": "0.9.0" },
+  "command": "apply",
+  "status": "success",
+  "dryRun": false,
+  "startedAt": %q,
+  "finishedAt": "2026-07-05T12:34:56+09:00",
+  "results": []
+}`
+	cases := []struct {
+		name      string
+		startedAt string
+	}{
+		{"非日時文字列", "not-a-date"},
+		{"月域外", "2026-13-05T12:34:56+09:00"},
+		{"区切り文字が空白", "2026-07-05 12:34:56+09:00"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			doc := fmt.Appendf(nil, base, tc.startedAt)
+			fs := c.Check(doc)
+			if len(fs) == 0 {
+				t.Fatalf("不正な startedAt %q が弾かれなかった", tc.startedAt)
+			}
+			if !strings.Contains(strings.Join(fs, "\n"), "startedAt") {
+				t.Errorf("違反が startedAt を指していない: %v", fs)
+			}
+		})
 	}
 }
 

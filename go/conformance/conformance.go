@@ -1,7 +1,9 @@
 // Package conformance は niface エンベロープの適合検証を行う。
 //
-// 適合は 2 層で判定する（→ spec/v1/spec.md §8, ADR-0021, ADR-0023）:
-//   - schema 検証: schema/v1/envelope.schema.json（Draft 2020-12）への適合
+// 適合は 2 層で判定する（→ spec/v1/spec.md §8, ADR-0021, ADR-0023, ADR-0025）:
+//   - schema 検証: schema/v1/envelope.schema.json（Draft 2020-12）への適合。
+//     format を assertion として評価し、startedAt / finishedAt の RFC 3339 を
+//     強制する（§2, §8, ADR-0025）
 //   - lint 検査: schema で表現しきれない MUST（§2 status 整合は schema 側、
 //     §5 の itemId 参照整合・subject.name / item.id 一意性は本パッケージ）
 package conformance
@@ -30,6 +32,9 @@ func NewChecker(schemaJSON []byte) (*Checker, error) {
 		return nil, fmt.Errorf("schema の JSON parse: %w", err)
 	}
 	c := jsonschema.NewCompiler()
+	// Draft 2020-12 は format を既定で注釈扱いにする。schema の format: date-time を
+	// assertion として評価し、startedAt / finishedAt の RFC 3339 を強制する（§8, ADR-0025）。
+	c.AssertFormat()
 	if err := c.AddResource(schemaURI, doc); err != nil {
 		return nil, fmt.Errorf("schema の登録: %w", err)
 	}
