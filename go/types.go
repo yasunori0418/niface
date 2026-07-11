@@ -1,5 +1,7 @@
 package niface
 
+import "encoding/json"
+
 // エンベロープと構成型(specVersion 1)。
 // トップレベルは常に Results[] を持ち、各要素は主体を Subject で名指す。
 // ツール固有情報は Info の型パラメータで表現する。
@@ -110,4 +112,37 @@ type Envelope[TItem, TChange, TInfo, TEnvInfo any] struct {
 	Warnings    []Warning                              `json:"warnings,omitempty"`
 	Info        TEnvInfo                               `json:"info,omitempty"`
 	Results     []SubjectResult[TItem, TChange, TInfo] `json:"results"`
+}
+
+// MarshalJSON: 必須配列の nil を [] に正規化する。
+//
+// Envelope.Results / Result.Items は omitempty なしの必須配列(schema は type: array + required)。
+// producer が nil slice のまま marshal すると null が出力され schema violation になる。
+// この footgun を型レベルで塞ぐため、両型に MarshalJSON を実装して nil を空配列へ正規化する。
+//
+// generic type alias(type A[T] = B[T])は Go 1.24 要求のため使わず、method を持たない
+// 別名の generic 定義型(シャドー)へ変換してから既定のフィールド直列化に委ねる shadow struct
+// 方式で go 1.22 のまま実装する。シャドー型は Envelope / Result の method を継承しないため
+// json.Marshal がそこで無限再帰しない。
+
+// envelopeShadow は Envelope と同一フィールドだが MarshalJSON を持たないシャドー型。
+type envelopeShadow[TItem, TChange, TInfo, TEnvInfo any] Envelope[TItem, TChange, TInfo, TEnvInfo]
+
+func (e Envelope[TItem, TChange, TInfo, TEnvInfo]) MarshalJSON() ([]byte, error) {
+	s := envelopeShadow[TItem, TChange, TInfo, TEnvInfo](e)
+	if s.Results == nil {
+		s.Results = []SubjectResult[TItem, TChange, TInfo]{}
+	}
+	return json.Marshal(s)
+}
+
+// resultShadow は Result と同一フィールドだが MarshalJSON を持たないシャドー型。
+type resultShadow[TItem, TChange, TInfo any] Result[TItem, TChange, TInfo]
+
+func (r Result[TItem, TChange, TInfo]) MarshalJSON() ([]byte, error) {
+	s := resultShadow[TItem, TChange, TInfo](r)
+	if s.Items == nil {
+		s.Items = []Item[TItem]{}
+	}
+	return json.Marshal(s)
 }
