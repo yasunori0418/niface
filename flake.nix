@@ -7,6 +7,12 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+
+    # id 導出(nix/lib.nix)の評価テスト。flake-parts モジュールが checks に載せる。
+    nix-unit = {
+      url = "github:nix-community/nix-unit";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -21,6 +27,11 @@
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       inherit systems;
+
+      imports = [
+        # nix-unit の評価テストを checks に載せる flake-parts モジュール。
+        inputs.nix-unit.modules.flake.default
+      ];
 
       perSystem =
         { pkgs, ... }:
@@ -70,6 +81,16 @@
             # niface-go の build/checkPhase で go test ./... が走る。依存は
             # vendorHash で pin した FOD が取得するため vendor をコミットしない。
             go = niface-go;
+          };
+
+          # nix-unit: id 導出(nix/lib.nix)の値域・isAscii を評価テストで検証する。
+          # sandbox 内で flake を再 import するため direct input を渡しオフライン評価。
+          nix-unit.inputs = {
+            inherit (inputs) nixpkgs flake-parts nix-unit;
+          };
+          nix-unit.tests = import ./nix/tests.nix {
+            inherit (pkgs) lib;
+            idLib = import ./nix/lib.nix { inherit (pkgs) lib; };
           };
 
           formatter = pkgs.nixfmt;

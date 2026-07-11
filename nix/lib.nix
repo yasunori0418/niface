@@ -18,6 +18,9 @@ rec {
 
   # s の全バイトが ASCII(U+0000–U+007F)か。cntrl(0x00–0x1F, 0x7F)と
   # print(0x20–0x7E)の和が ASCII 全域に一致し、非 ASCII バイト(≥0x80)を除く。
+  # std::regex の既定ロケール(C)で高位バイト(≥0x80)が print/cntrl に該当しない
+  # ことに依存する。この前提(非 ASCII を false にする)は nix-unit の isAscii
+  # テストで担保する(→ nix/tests/ascii.nix)。
   isAscii = s: builtins.match "[[:cntrl:][:print:]]*" s != null;
 
   # identity 値を spec §5 の値域で検証し、域内ならそのまま返す(域外は throw)。
