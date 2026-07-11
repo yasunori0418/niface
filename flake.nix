@@ -67,6 +67,14 @@
             # niface-go の build/checkPhase で go test ./... が走る。依存は
             # vendorHash で pin した FOD が取得するため vendor をコミットしない。
             go = niface-go;
+
+            # 適合ヘルパ mkSchemaCheck 自体の smoke test(dogfooding)。export した
+            # lib.mkSchemaCheck に niface の valid testdata を通し、検証器の配線・
+            # schema 注入・find 集約が壊れていないことを niface 自身の CI で固定する。
+            schema-selftest = inputs.self.lib.mkSchemaCheck {
+              inherit pkgs;
+              testdataDir = ./testdata/v1/valid;
+            };
           };
 
           # nix-unit: id 導出(nix/lib.nix)の値域・isAscii を評価テストで検証する。
