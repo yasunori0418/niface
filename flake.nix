@@ -36,23 +36,9 @@
       perSystem =
         { pkgs, ... }:
         let
-          # niface の Go 参照実装。cmd/validate(CLI niface-validate)をビルドし、
-          # build 時に go test ./...(id-vectors + testdata 適合検証)を走らせる。
-          # 依存は vendorHash で pin した FOD が取得する(vendor はコミットしない)。
-          niface-go = pkgs.buildGoModule {
-            pname = "niface-validate";
-            version = "0.1.0";
-            src = ./.;
-            modRoot = "go";
-            vendorHash = "sha256-qVoj03LNLbdoCUAOydK7oEHsuZ1BZ6Z2jwYB3gPOfrw=";
-            subPackages = [ "cmd/validate" ];
-            doCheck = true;
-            checkPhase = ''
-              runHook preCheck
-              go test ./...
-              runHook postCheck
-            '';
-          };
+          # niface の Go 参照実装(CLI niface-validate)。定義は nix/package.nix に
+          # 括り出し、packages.validate / flake.lib.mkSchemaCheck と共有する。
+          niface-go = import ./nix/package.nix { inherit pkgs; };
         in
         {
           packages.validate = niface-go;
