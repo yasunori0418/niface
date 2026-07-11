@@ -47,38 +47,65 @@ func TestValidTestdataConforms(t *testing.T) {
 
 // startedAt / finishedAt の RFC 3339 は format assertion で強制する（§2, §8, ADR-0025）。
 // Draft 2020-12 の既定（format = 注釈扱い）では素通りしてしまう不正日時が、schema 層で
-// 弾かれることを保証する。他フィールドは valid に保ち、日時 1 つだけを壊す。
+// 弾かれることを保証する。top-level / subjectResult の 4 スロットそれぞれに不正値を入れ、
+// 他 3 スロットは valid に保ち、finding が対応する JSON pointer を指すことまで確認する。
 func TestFormatAssertionRejectsBadDateTime(t *testing.T) {
 	c := newChecker(t)
-	base := `{
+	// 4 つの date-time スロットを個別に差し込むエンベロープテンプレート。
+	envelope := func(topStart, topFinish, subStart, subFinish string) []byte {
+		return fmt.Appendf(nil, `{
   "specVersion": 1,
   "tool": { "name": "nput", "version": "0.9.0" },
   "command": "apply",
   "status": "success",
   "dryRun": false,
   "startedAt": %q,
-  "finishedAt": "2026-07-05T12:34:56+09:00",
-  "results": []
-}`
-	cases := []struct {
-		name      string
-		startedAt string
+  "finishedAt": %q,
+  "results": [
+    {
+      "subject": { "name": "home" },
+      "status": "success",
+      "startedAt": %q,
+      "finishedAt": %q,
+      "result": { "items": [] }
+    }
+  ]
+}`, topStart, topFinish, subStart, subFinish)
+	}
+	const ok = "2026-07-05T12:34:56+09:00"
+	// RFC 3339 の各違反を突く不正 date-time。オフセット欠落は §2 の MUST に対応する。
+	bads := []struct {
+		name, val string
 	}{
 		{"非日時文字列", "not-a-date"},
 		{"月域外", "2026-13-05T12:34:56+09:00"},
 		{"区切り文字が空白", "2026-07-05 12:34:56+09:00"},
+		{"オフセット欠落", "2026-07-05T12:34:56"},
 	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			doc := fmt.Appendf(nil, base, tc.startedAt)
-			fs := c.Check(doc)
-			if len(fs) == 0 {
-				t.Fatalf("不正な startedAt %q が弾かれなかった", tc.startedAt)
-			}
-			if !strings.Contains(strings.Join(fs, "\n"), "startedAt") {
-				t.Errorf("違反が startedAt を指していない: %v", fs)
-			}
-		})
+	// 各スロットに不正値を注入し、finding がそのスロットの JSON pointer を指すことを検査する。
+	slots := []struct {
+		name, ptr string
+		inject    func(bad string) []byte
+	}{
+		{"top-level startedAt", "/startedAt", func(b string) []byte { return envelope(b, ok, ok, ok) }},
+		{"top-level finishedAt", "/finishedAt", func(b string) []byte { return envelope(ok, b, ok, ok) }},
+		{"subjectResult startedAt", "/results/0/startedAt", func(b string) []byte { return envelope(ok, ok, b, ok) }},
+		{"subjectResult finishedAt", "/results/0/finishedAt", func(b string) []byte { return envelope(ok, ok, ok, b) }},
+	}
+	for _, s := range slots {
+		for _, bad := range bads {
+			t.Run(s.name+"/"+bad.name, func(t *testing.T) {
+				fs := c.Check(s.inject(bad.val))
+				if len(fs) == 0 {
+					t.Fatalf("不正な %s=%q が弾かれなかった", s.name, bad.val)
+				}
+				// santhosh は違反箇所を at '<pointer>' 形式で出す。引用符で囲んで
+				// /startedAt と /results/0/startedAt の取り違えを防ぐ。
+				if want := "'" + s.ptr + "'"; !strings.Contains(strings.Join(fs, "\n"), want) {
+					t.Errorf("違反が %s を指していない: %v", s.ptr, fs)
+				}
+			})
+		}
 	}
 }
 
