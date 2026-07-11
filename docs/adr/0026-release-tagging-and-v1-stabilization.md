@@ -3,6 +3,7 @@
 - ステータス: 採用
 - 日付: 2026-07-11
 - 関連: `docs/design.md`, `docs/ecosystem/overview.md`, `go/`(サブディレクトリ module `github.com/yasunori0418/niface/go`), `flake.nix`, ADR-0010
+- 改訂対象: ADR-0010(「semver 文字列」棄却の射程を `specVersion` フィールドに限定し、リリースタグを別レイヤとして明確化)
 
 ## 背景
 
@@ -15,13 +16,13 @@ ADR-0010 はバージョニング規約を定めたが、その射程は `specVe
 ## 決定
 
 - **タグ体系**: 同一コミットに 2 本のタグを対で打つ。
-  - `v1.N.P` — 規格スナップショット(flake input / 人間用)。`N` = 互換追加(spec / schema / testdata に触れる変更)ごと、`P` = 規格に影響しない修正(実装 fix・testdata 追補)。
+  - `v1.N.P` — 規格スナップショット(flake input / 人間用)。`N` = 規範面(spec / schema)への互換追加ごと、`P` = 規範に影響しない修正(実装 fix・testdata の追補/修正)。互換追加に付随する testdata は N に含み、単独の testdata 追補は P とする。
   - `go/v1.N.P` — 同一コミットの Go module 用ミラー。サブディレクトリ module のため `go/` prefix を必須とする。
 - **打つタイミング**: 互換変更 PR のマージごとに、上記 2 本を対で打つ。
 - **v1 stable 宣言基準**: **2 ツール適合**(nput + 次ツール、M2 の nboot 想定)を宣言条件とする。単一実装(nput)の写像でないことを担保する needs 駆動の基準と同型。宣言時に README / overview の draft 表記を落とし、spec 英語版の要否を再検討する。
 - **ADR-0010 との関係**: `v1.N.P` は semver 形式だが、ADR-0010 が棄却した「semver 文字列」は `specVersion` フィールドの粒度に関する判断であり、リリースタグとはレイヤが異なる。両者は矛盾しない(specVersion = 非互換世代の整数、タグ = リリーススナップショット識別子)。
 - **実装バージョンとの独立**: `flake.nix` の `packages.validate` の `version = "0.1.0"` は Go 参照実装の実装バージョンであり、規格タグ `v1.N.P` とは独立して増減する。本 ADR は `flake.nix` を改訂しない。
-- **初回タグ**: `v1.0.0` + `go/v1.0.0` を初回リリースとして打つ。ただしタグ作成は本 issue の worktree 内では行わず、並行 issue が全てマージされた後の main の HEAD に対して行う(worktree 内の作業は ADR + docs 同期のみ)。
+- **初回タグ**: `v1.0.0` + `go/v1.0.0` を初回リリースとして採番する。初回タグは、v1 を対象とする一連の変更が main に出そろった後の main HEAD に対して打つ。タグは確定した規格スナップショットに打つものであり、個別の作業ブランチ上では打たない。
 
 ## 根拠
 
@@ -35,7 +36,7 @@ ADR-0010 はバージョニング規約を定めたが、その射程は `specVe
 
 - `docs/design.md`: ADR 索引に本 ADR を追加。「バージョニングとリリースタグ」節を新設し、specVersion(非互換世代)/ リリースタグ(`v1.N.P`・`go/v1.N.P`)/ stable 宣言基準を記述。
 - `docs/ecosystem/overview.md`: niface の draft → stable 基準(2 ツール適合)とリリースタグ体系を追記。
-- タグ `v1.0.0` / `go/v1.0.0` は全レーンマージ後の main HEAD に対して親セッションが打つ(本 worktree では打たない)。
+- タグ `v1.0.0` / `go/v1.0.0` は、v1 対象の変更が main に出そろった後の main HEAD に対して打つ(個別の作業ブランチ上では打たない)。
 - `spec/` / `schema/` / `testdata/` / `go/` / `nix/` / `flake.nix` / `README` は無改訂。`specVersion` は 1 のまま(ADR-0010 の運用は不変)。
 
 ## 棄却した代替案

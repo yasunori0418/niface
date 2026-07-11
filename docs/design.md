@@ -71,7 +71,7 @@ niface/
 
 リリースタグは同一コミットに 2 本を対で打つ。互換変更 PR のマージごとに打つ。
 
-- `v1.N.P` — 規格スナップショット（flake input / 人間用）。`N` = 互換追加（spec / schema / testdata に触れる変更）ごと、`P` = 規格に影響しない修正（実装 fix・testdata 追補）。
+- `v1.N.P` — 規格スナップショット（flake input / 人間用）。`N` = 規範面（spec / schema）への互換追加ごと、`P` = 規範に影響しない修正（実装 fix・testdata の追補/修正）。互換追加に付随する testdata は N に含み、単独の testdata 追補は P とする。
 - `go/v1.N.P` — 同一コミットの Go module 用ミラー。Go module はサブディレクトリ（`github.com/yasunori0418/niface/go`）にあり、prefix 無しの root タグは Go ツールチェーンから見えないため、`go/` prefix 付きタグが無いと pseudo-version 参照しかできない。
 
 `v1.N.P` は semver 形式だが、ADR-0010 が `specVersion` フィールドについて semver 文字列を棄却したこととは矛盾しない。両者はレイヤが異なる（specVersion = 非互換世代、タグ = リリーススナップショット識別子）。
