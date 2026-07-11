@@ -83,8 +83,30 @@
         };
 
       flake = {
-        # niface 規格の参照実装(id 導出)。specVersion 1 の identity → id を導く。
-        lib = import ./nix/lib.nix { inherit (nixpkgs) lib; };
+        # niface 規格の参照ライブラリ。id 導出(nix/lib.nix)に、適合ヘルパ
+        # mkSchemaCheck を足して export する。
+        lib = (import ./nix/lib.nix { inherit (nixpkgs) lib; }) // {
+          # ツール側 testdata(自ツールの出力サンプル)を規格 schema で検証する
+          # check derivation を生成する。Go 検証器(niface-validate)をラップし、
+          # 呼び出し規約・依存(vendorHash)は niface 側に閉じる。呼び出し側は
+          #   niface.lib.mkSchemaCheck { inherit pkgs; testdataDir = ./testdata; }
+          # だけで済む。testdataDir 配下の *.json を再帰的に全て検証する。
+          mkSchemaCheck =
+            { pkgs, testdataDir }:
+            let
+              niface-go = import ./nix/package.nix { inherit pkgs; };
+            in
+            pkgs.runCommand "niface-schema-check" { } ''
+              set -euo pipefail
+              files=$(find ${testdataDir} -type f -name '*.json' | sort)
+              if [ -z "$files" ]; then
+                echo "niface: ${testdataDir} 配下に検証対象の *.json が見つかりません" >&2
+                exit 2
+              fi
+              ${niface-go}/bin/validate -schema ${./schema/v1/envelope.schema.json} $files
+              touch $out
+            '';
+        };
       };
     };
 }
