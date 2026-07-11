@@ -38,7 +38,7 @@ nix run .#validate -- <file.json>  # 単一エンベロープを適合検証(nif
 - 英語版 `README.md` を一次参照、`README.ja.md` はその日本語訳
 - `spec/v1/spec.md` は MUST/SHOULD/MAY(RFC 2119)の語彙を維持する
 - 互換変更(フィールド追加)は specVersion を上げない。削除・意味変更・必須化のみ specVersion increment(その場合 spec/v2/ を新設)
-- JCS 実装はサブセット。拡張する場合は Go/Nix/ベクタの 3 点を同時に更新する
+- identity の値域は spec §5 に定める(文字列/整数±(2^53−1)/bool/null/配列/オブジェクト(メンバー名 ASCII))。域外は各実装が id 導出時に拒否する。値域や JCS 実装を変える場合は Go/Nix/ベクタの 3 点を同時に更新する
 
 ## 開発環境
 

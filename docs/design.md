@@ -29,6 +29,7 @@
 | [0021](adr/0021-conformance-lint-for-schema-inexpressible-musts.md) | schema で表現しきれない MUST を適合検査（schema 強化 + リント）に取り込む |
 | [0022](adr/0022-sensitive-info-masking-guidance.md) | 機微情報を info / detail に生で載せない SHOULD を記録する |
 | [0023](adr/0023-go-conformance-validator-not-cue.md) | 適合検証を Go 実装に集約し単一ソース IDL（CUE）は採用しない |
+| [0024](adr/0024-identity-value-domain.md) | item id の identity 値域を確定し域外を実装拒否とする |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
