@@ -1,7 +1,7 @@
 # nix-unit: isAscii の判定を検証する(nix/lib.nix のロケール前提を担保する)。
 # 高位バイト(≥0x80)を非 ASCII として false にすることが deriveId の
 # メンバー名検査の正しさ・Go(バイト単位検査)との対称性の土台。
-{ lib, idLib }:
+{ idLib }:
 let
   inherit (idLib) isAscii;
 in
