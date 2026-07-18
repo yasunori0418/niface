@@ -81,6 +81,11 @@ func TestRunSchemaParseErrorExits2(t *testing.T) {
 	if !strings.Contains(stderr.String(), "JSON parse") {
 		t.Errorf("parse 段階の失敗を示す診断が出ていない: %s", stderr.String())
 	}
+	// 排他性: compile 段階のマーカーを含まないことまで固定し、両段階の文言が
+	// 共通化されて段階分離が崩れた場合も検知する。
+	if strings.Contains(stderr.String(), "コンパイル") {
+		t.Errorf("parse 失敗の診断に compile 段階のマーカーが混入した: %s", stderr.String())
+	}
 }
 
 // JSON としては妥当だが JSON Schema として compile に失敗する経路も exit 2
@@ -98,6 +103,10 @@ func TestRunSchemaCompileErrorExits2(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "コンパイル") {
 		t.Errorf("compile 段階の失敗を示す診断が出ていない: %s", stderr.String())
+	}
+	// 排他性: parse 段階のマーカーを含まないことまで固定する(parse 側と対)。
+	if strings.Contains(stderr.String(), "JSON parse") {
+		t.Errorf("compile 失敗の診断に parse 段階のマーカーが混入した: %s", stderr.String())
 	}
 }
 
