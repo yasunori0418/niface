@@ -93,9 +93,12 @@ func TestDeriveIDIntegerDomain(t *testing.T) {
 			t.Errorf("in-domain integer %v: unexpected error: %v", id.Key, err)
 		}
 	}
-	// case int / case int64 の域外を両方突く。int は 32bit 環境で定数が
-	// オーバーフローしないよう実行時変換で作る(64bit 環境で域外値になる)。
-	bigInt := int(int64(maxSafe) + 1)
+	// case int / case int64 の域外を両方突く。int の域外値は非定数の int64 変数を
+	// 経由して作る。int(int64(maxSafe)+1) と定数式で書くと 32bit 環境では定数が
+	// int の範囲を超えてコンパイルエラーになるため、実行時変換で回避する
+	// (64bit 環境では int が 64bit のため域外値として有効に突ける)。
+	over := int64(maxSafe) + 1
+	bigInt := int(over)
 	outDomain := []Identity{
 		{Kind: "n", Key: int64(maxSafe) + 1},
 		{Kind: "n", Key: -int64(maxSafe) - 1},
