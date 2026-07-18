@@ -32,6 +32,7 @@
 | [0024](adr/0024-identity-value-domain.md) | item id の identity 値域を確定し域外を実装拒否とする |
 | [0025](adr/0025-format-assertion-conformance.md) | format 検証を assertion として規範化し適合検査の素通りを塞ぐ |
 | [0026](adr/0026-release-tagging-and-v1-stabilization.md) | リリースタグ運用(`v1.N.P` / `go/v1.N.P`)と v1 安定化基準を定める |
+| [0027](adr/0027-negative-zero-normalization.md) | identity の負ゼロ(`-0`)を `0` に正規化して域内とする |
 
 ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) を参照。
 
