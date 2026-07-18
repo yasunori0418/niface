@@ -29,9 +29,11 @@ func TestNewDefaultCheckerAcceptsValidTestdata(t *testing.T) {
 	}
 }
 
-// default checker 自身が invalid を弾くことも 1 件直接検証する。バイト一致 +
+// default checker 自身が invalid を全件弾くことも直接検証する。バイト一致 +
 // 正本での invalid 拒否からの帰結に頼らず、将来 default 経路だけコンパイル設定
-// (AssertFormat 等)が分岐した場合も検知できるようにする。
+// (AssertFormat 等)が分岐した場合も検知できるようにする。schema 層由来
+// (RFC 3339・id 形式等)と lint 層由来の invalid を両方含む全件ループで、
+// default checker のコンパイル経路を固定する。
 func TestNewDefaultCheckerRejectsInvalidTestdata(t *testing.T) {
 	c, err := NewDefaultChecker()
 	if err != nil {
@@ -41,12 +43,14 @@ func TestNewDefaultCheckerRejectsInvalidTestdata(t *testing.T) {
 	if len(files) == 0 {
 		t.Fatal("invalid testdata が見つからない")
 	}
-	doc, err := os.ReadFile(files[0])
-	if err != nil {
-		t.Fatalf("%s 読み込み: %v", files[0], err)
-	}
-	if fs := c.Check(doc); len(fs) == 0 {
-		t.Errorf("invalid %s が違反ゼロで通過した", filepath.Base(files[0]))
+	for _, p := range files {
+		doc, err := os.ReadFile(p)
+		if err != nil {
+			t.Fatalf("%s 読み込み: %v", p, err)
+		}
+		if fs := c.Check(doc); len(fs) == 0 {
+			t.Errorf("invalid %s が違反ゼロで通過した", filepath.Base(p))
+		}
 	}
 }
 
