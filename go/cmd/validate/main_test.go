@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -65,14 +66,39 @@ func TestRunSchemaReadErrorExits2(t *testing.T) {
 	}
 }
 
-// schema ファイルは読めるが内容が壊れていて compile に失敗する経路も exit 2。
-func TestRunSchemaCompileErrorExits2(t *testing.T) {
+// schema ファイルは読めるが JSON として parse できない経路も exit 2。
+func TestRunSchemaParseErrorExits2(t *testing.T) {
 	broken := filepath.Join(t.TempDir(), "broken.schema.json")
 	if err := os.WriteFile(broken, []byte("{"), 0o644); err != nil {
 		t.Fatalf("壊れた schema の書き込み: %v", err)
 	}
 	var stderr bytes.Buffer
 	if got := run(broken, nil, strings.NewReader("{}"), &stderr); got != 2 {
+		t.Errorf("exit=%d want 2 (stderr: %s)", got, stderr.String())
+	}
+}
+
+// JSON としては妥当だが JSON Schema として compile に失敗する経路も exit 2
+// (parse 失敗とは別の同値クラス)。解決できない $ref は compile 段階で落ちる。
+func TestRunSchemaCompileErrorExits2(t *testing.T) {
+	broken := filepath.Join(t.TempDir(), "uncompilable.schema.json")
+	if err := os.WriteFile(broken, []byte(`{"$ref": "#/does/not/exist"}`), 0o644); err != nil {
+		t.Fatalf("壊れた schema の書き込み: %v", err)
+	}
+	var stderr bytes.Buffer
+	if got := run(broken, nil, strings.NewReader("{}"), &stderr); got != 2 {
+		t.Errorf("exit=%d want 2 (stderr: %s)", got, stderr.String())
+	}
+}
+
+// errReader は常に失敗する Reader。stdin 読み込みエラー経路を突く。
+type errReader struct{}
+
+func (errReader) Read([]byte) (int, error) { return 0, errors.New("read error") }
+
+func TestRunStdinReadErrorExits2(t *testing.T) {
+	var stderr bytes.Buffer
+	if got := run("", nil, errReader{}, &stderr); got != 2 {
 		t.Errorf("exit=%d want 2 (stderr: %s)", got, stderr.String())
 	}
 }
