@@ -35,6 +35,16 @@ var (
 	errUnsupported  = errors.New("niface: unsupported type in identity domain")
 )
 
+// checkIntRange は整数値 n が identity の値域 ±(2^53−1)(spec §5)に収まるかを
+// 検査する。域外なら errIntegerRange を wrap して返す。int / int64 / json.Number の
+// 各経路が共通で用い、境界判定を一箇所に集約する。
+func checkIntRange(n int64) error {
+	if n > maxSafeInteger || n < -maxSafeInteger {
+		return fmt.Errorf("%w (got integer %d)", errIntegerRange, n)
+	}
+	return nil
+}
+
 // Identity は item id の導出元。
 type Identity struct {
 	Kind string `json:"kind"`
@@ -66,13 +76,13 @@ func canonicalize(v any) (string, error) {
 	case string:
 		return encodeString(x), nil
 	case int:
-		if int64(x) > maxSafeInteger || int64(x) < -maxSafeInteger {
-			return "", fmt.Errorf("integer %d: %w", x, errIntegerRange)
+		if err := checkIntRange(int64(x)); err != nil {
+			return "", err
 		}
 		return strconv.FormatInt(int64(x), 10), nil
 	case int64:
-		if x > maxSafeInteger || x < -maxSafeInteger {
-			return "", fmt.Errorf("integer %d: %w", x, errIntegerRange)
+		if err := checkIntRange(x); err != nil {
+			return "", err
 		}
 		return strconv.FormatInt(x, 10), nil
 	case json.Number:
@@ -83,8 +93,13 @@ func canonicalize(v any) (string, error) {
 			return "", fmt.Errorf("number %q: %w", s, errNonInteger)
 		}
 		n, err := strconv.ParseInt(s, 10, 64)
-		if err != nil || n > maxSafeInteger || n < -maxSafeInteger {
-			return "", fmt.Errorf("integer %q: %w", s, errIntegerRange)
+		if err != nil {
+			// int64 に収まらない整数表記(例: 99999999999999999999)。
+			// 値域外なので errIntegerRange に分類する。
+			return "", fmt.Errorf("%w (got integer %q)", errIntegerRange, s)
+		}
+		if err := checkIntRange(n); err != nil {
+			return "", err
 		}
 		return strconv.FormatInt(n, 10), nil
 	case float64:
