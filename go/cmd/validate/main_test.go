@@ -65,6 +65,18 @@ func TestRunSchemaReadErrorExits2(t *testing.T) {
 	}
 }
 
+// schema ファイルは読めるが内容が壊れていて compile に失敗する経路も exit 2。
+func TestRunSchemaCompileErrorExits2(t *testing.T) {
+	broken := filepath.Join(t.TempDir(), "broken.schema.json")
+	if err := os.WriteFile(broken, []byte("{"), 0o644); err != nil {
+		t.Fatalf("壊れた schema の書き込み: %v", err)
+	}
+	var stderr bytes.Buffer
+	if got := run(broken, nil, strings.NewReader("{}"), &stderr); got != 2 {
+		t.Errorf("exit=%d want 2 (stderr: %s)", got, stderr.String())
+	}
+}
+
 func TestRunInputReadErrorExits2(t *testing.T) {
 	var stderr bytes.Buffer
 	if got := run("", []string{"no/such/envelope.json"}, strings.NewReader(""), &stderr); got != 2 {
