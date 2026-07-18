@@ -32,7 +32,7 @@ rec {
         throw "niface: integer ${toString v} is out of identity domain ±(2^53-1)"
       else v)
     else if t == "float" then
-      throw "niface: non-integral number ${toString v} is unsupported in identity domain"
+      throw "niface: floating-point number ${toString v} must use integer notation (no fraction/exponent) in identity domain"
     else if t == "string" || t == "bool" || t == "null" then v
     else if t == "list" then map checkDomain v
     else if t == "set" then
