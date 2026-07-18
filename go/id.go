@@ -35,6 +35,16 @@ var (
 	errUnsupported  = errors.New("niface: unsupported type in identity domain")
 )
 
+// checkIntRange は整数値 n が identity の値域 ±(2^53−1)(spec §5)に収まるかを
+// 検査する。域外なら errIntegerRange を wrap して返す。int / int64 / json.Number の
+// 各経路が共通で用い、境界判定を一箇所に集約する。
+func checkIntRange(n int64) error {
+	if n > maxSafeInteger || n < -maxSafeInteger {
+		return fmt.Errorf("%w (got integer %d)", errIntegerRange, n)
+	}
+	return nil
+}
+
 // Identity は item id の導出元。
 type Identity struct {
 	Kind string `json:"kind"`
@@ -66,13 +76,13 @@ func canonicalize(v any) (string, error) {
 	case string:
 		return encodeString(x), nil
 	case int:
-		if int64(x) > maxSafeInteger || int64(x) < -maxSafeInteger {
-			return "", fmt.Errorf("integer %d: %w", x, errIntegerRange)
+		if err := checkIntRange(int64(x)); err != nil {
+			return "", err
 		}
 		return strconv.FormatInt(int64(x), 10), nil
 	case int64:
-		if x > maxSafeInteger || x < -maxSafeInteger {
-			return "", fmt.Errorf("integer %d: %w", x, errIntegerRange)
+		if err := checkIntRange(x); err != nil {
+			return "", err
 		}
 		return strconv.FormatInt(x, 10), nil
 	case json.Number:
@@ -80,18 +90,23 @@ func canonicalize(v any) (string, error) {
 		// (1.0・1e3 等、値が整数でも)は域外。整数表記のみ ±(2^53−1) で受理。
 		s := x.String()
 		if strings.ContainsAny(s, ".eE") {
-			return "", fmt.Errorf("number %q: %w", s, errNonInteger)
+			return "", fmt.Errorf("%w (got %q)", errNonInteger, s)
 		}
 		n, err := strconv.ParseInt(s, 10, 64)
-		if err != nil || n > maxSafeInteger || n < -maxSafeInteger {
-			return "", fmt.Errorf("integer %q: %w", s, errIntegerRange)
+		if err != nil {
+			// int64 に収まらない整数表記(例: 99999999999999999999)。
+			// 値域外なので errIntegerRange に分類する。
+			return "", fmt.Errorf("%w (got integer %q)", errIntegerRange, s)
+		}
+		if err := checkIntRange(n); err != nil {
+			return "", err
 		}
 		return strconv.FormatInt(n, 10), nil
 	case float64:
 		// 浮動小数点数は identity に使えない(整数は int/int64/json.Number で表す)。
 		// encoding/json は 1 と 1.0 を共に float64 にするため、float64 型は表記情報を
 		// 持たず整数か判定できない。よって型として拒否する(spec §5・表記で判定)。
-		return "", fmt.Errorf("value %v: %w", x, errFloatType)
+		return "", fmt.Errorf("%w (got float64 %v)", errFloatType, x)
 	case []any:
 		parts := make([]string, len(x))
 		for i, e := range x {
@@ -106,7 +121,7 @@ func canonicalize(v any) (string, error) {
 		keys := make([]string, 0, len(x))
 		for k := range x {
 			if !isASCII(k) {
-				return "", fmt.Errorf("object member name %q: %w", k, errNonASCIIKey)
+				return "", fmt.Errorf("%w (got %q)", errNonASCIIKey, k)
 			}
 			keys = append(keys, k)
 		}
@@ -124,7 +139,7 @@ func canonicalize(v any) (string, error) {
 		}
 		return "{" + strings.Join(parts, ",") + "}", nil
 	default:
-		return "", fmt.Errorf("type %T: %w", v, errUnsupported)
+		return "", fmt.Errorf("%w (got %T)", errUnsupported, v)
 	}
 }
 
