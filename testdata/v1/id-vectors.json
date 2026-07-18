@@ -1,7 +1,7 @@
 {
   "specVersion": 1,
   "algorithm": "sha256(JCS(identity)) -> lowercase hex",
-  "note": "canonical はデバッグ用の参考値。適合判定は expected との一致のみで行う。identity 値域(spec §5): 文字列/整数±(2^53−1)/bool/null/配列/オブジェクト(メンバー名 ASCII)。数値は表記で判定し 1.0・1e3 等の小数/指数表記は域外。rejected は域外 identity で、実装は id 導出時に拒否する",
+  "note": "canonical はデバッグ用の参考値。適合判定は expected との一致のみで行う。identity 値域(spec §5): 文字列/整数±(2^53−1)/bool/null/配列/オブジェクト(メンバー名 ASCII)。数値は表記で判定し 1.0・1e3 等の小数/指数表記は域外。負ゼロ -0 は域内で 0 に正規化する。rejected は域外 identity で、実装は id 導出時に拒否する",
   "vectors": [
     {
       "identity": {
@@ -94,6 +94,22 @@
       },
       "canonical": "{\"key\":9007199254740991,\"kind\":\"maxint\"}",
       "expected": "6d43a7e0ef4ce0d93e02b79571ceb9165144a9383c96a8bcbaa7bb0c0f83103e"
+    },
+    {
+      "identity": {
+        "kind": "minint",
+        "key": -9007199254740991
+      },
+      "canonical": "{\"key\":-9007199254740991,\"kind\":\"minint\"}",
+      "expected": "af3075cdc0aa5db535692dd420fce74fe5e30a42e18c981ad9e61a51e4cace85"
+    },
+    {
+      "identity": {
+        "kind": "negzero",
+        "key": -0
+      },
+      "canonical": "{\"key\":0,\"kind\":\"negzero\"}",
+      "expected": "c07a24dd46fa030a17d18a66bfef44d4db741df656d4128b1a1a57963115abce"
     }
   ],
   "rejected": [
@@ -162,6 +178,13 @@
         "key": 1e3
       },
       "reason": "指数表記は域外(値が整数でも。数値は表記で判定する)"
+    },
+    {
+      "identity": {
+        "kind": "n",
+        "key": 99999999999999999999
+      },
+      "reason": "安全整数域 ±(2^53−1) の外(値は ≥2^64。[2^63,2^64) は Nix fromJSON が読込時に throw するため回避)"
     }
   ]
 }
