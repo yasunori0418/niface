@@ -24,23 +24,28 @@ import (
 func main() {
 	schemaPath := flag.String("schema", "", "envelope schema(JSON)のパス(省略時は embed 済み正本 schema)")
 	flag.Parse()
+	os.Exit(run(*schemaPath, flag.Args(), os.Stdin, os.Stderr))
+}
 
+// run は検証本体。main から I/O(stdin / stderr)を注入可能にして、schema の
+// 選択分岐と exit code 分類(適合 0 / 違反 1 / schema・入力の I/O エラー 2)を
+// テストで固定できるようにする。
+func run(schemaPath string, args []string, stdin io.Reader, stderr io.Writer) int {
 	var chk *conformance.Checker
 	var err error
-	if *schemaPath == "" {
+	if schemaPath == "" {
 		chk, err = conformance.NewDefaultChecker()
 	} else {
-		var schemaJSON []byte
-		schemaJSON, err = os.ReadFile(*schemaPath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "schema 読み込み: %v\n", err)
-			os.Exit(2)
+		schemaJSON, readErr := os.ReadFile(schemaPath)
+		if readErr != nil {
+			fmt.Fprintf(stderr, "schema 読み込み: %v\n", readErr)
+			return 2
 		}
 		chk, err = conformance.NewChecker(schemaJSON)
 	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(2)
+		fmt.Fprintln(stderr, err)
+		return 2
 	}
 
 	type input struct {
@@ -48,19 +53,19 @@ func main() {
 		data []byte
 	}
 	var inputs []input
-	if flag.NArg() == 0 {
-		data, err := io.ReadAll(os.Stdin)
+	if len(args) == 0 {
+		data, err := io.ReadAll(stdin)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "stdin 読み込み: %v\n", err)
-			os.Exit(2)
+			fmt.Fprintf(stderr, "stdin 読み込み: %v\n", err)
+			return 2
 		}
 		inputs = append(inputs, input{"<stdin>", data})
 	} else {
-		for _, p := range flag.Args() {
+		for _, p := range args {
 			data, err := os.ReadFile(p)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s 読み込み: %v\n", p, err)
-				os.Exit(2)
+				fmt.Fprintf(stderr, "%s 読み込み: %v\n", p, err)
+				return 2
 			}
 			inputs = append(inputs, input{p, data})
 		}
@@ -70,15 +75,16 @@ func main() {
 	for _, in := range inputs {
 		findings := chk.Check(in.data)
 		if len(findings) == 0 {
-			fmt.Fprintf(os.Stderr, "OK   %s\n", in.name)
+			fmt.Fprintf(stderr, "OK   %s\n", in.name)
 			continue
 		}
 		conform = false
 		for _, f := range findings {
-			fmt.Fprintf(os.Stderr, "FAIL %s: %s\n", in.name, f)
+			fmt.Fprintf(stderr, "FAIL %s: %s\n", in.name, f)
 		}
 	}
 	if !conform {
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
