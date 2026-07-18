@@ -90,7 +90,7 @@ func canonicalize(v any) (string, error) {
 		// (1.0・1e3 等、値が整数でも)は域外。整数表記のみ ±(2^53−1) で受理。
 		s := x.String()
 		if strings.ContainsAny(s, ".eE") {
-			return "", fmt.Errorf("number %q: %w", s, errNonInteger)
+			return "", fmt.Errorf("%w (got %q)", errNonInteger, s)
 		}
 		n, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
@@ -106,7 +106,7 @@ func canonicalize(v any) (string, error) {
 		// 浮動小数点数は identity に使えない(整数は int/int64/json.Number で表す)。
 		// encoding/json は 1 と 1.0 を共に float64 にするため、float64 型は表記情報を
 		// 持たず整数か判定できない。よって型として拒否する(spec §5・表記で判定)。
-		return "", fmt.Errorf("value %v: %w", x, errFloatType)
+		return "", fmt.Errorf("%w (got float64 %v)", errFloatType, x)
 	case []any:
 		parts := make([]string, len(x))
 		for i, e := range x {
@@ -121,7 +121,7 @@ func canonicalize(v any) (string, error) {
 		keys := make([]string, 0, len(x))
 		for k := range x {
 			if !isASCII(k) {
-				return "", fmt.Errorf("object member name %q: %w", k, errNonASCIIKey)
+				return "", fmt.Errorf("%w (got %q)", errNonASCIIKey, k)
 			}
 			keys = append(keys, k)
 		}
@@ -139,7 +139,7 @@ func canonicalize(v any) (string, error) {
 		}
 		return "{" + strings.Join(parts, ",") + "}", nil
 	default:
-		return "", fmt.Errorf("type %T: %w", v, errUnsupported)
+		return "", fmt.Errorf("%w (got %T)", errUnsupported, v)
 	}
 }
 
