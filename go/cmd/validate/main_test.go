@@ -67,6 +67,8 @@ func TestRunSchemaReadErrorExits2(t *testing.T) {
 }
 
 // schema ファイルは読めるが JSON として parse できない経路も exit 2。
+// exit code は compile 失敗と同じ 2 に収束するため、NewChecker の段階識別
+// メッセージ(conformance.go)まで検証して parse 段階で落ちたことを固定する。
 func TestRunSchemaParseErrorExits2(t *testing.T) {
 	broken := filepath.Join(t.TempDir(), "broken.schema.json")
 	if err := os.WriteFile(broken, []byte("{"), 0o644); err != nil {
@@ -76,10 +78,15 @@ func TestRunSchemaParseErrorExits2(t *testing.T) {
 	if got := run(broken, nil, strings.NewReader("{}"), &stderr); got != 2 {
 		t.Errorf("exit=%d want 2 (stderr: %s)", got, stderr.String())
 	}
+	if !strings.Contains(stderr.String(), "JSON parse") {
+		t.Errorf("parse 段階の失敗を示す診断が出ていない: %s", stderr.String())
+	}
 }
 
 // JSON としては妥当だが JSON Schema として compile に失敗する経路も exit 2
 // (parse 失敗とは別の同値クラス)。解決できない $ref は compile 段階で落ちる。
+// こちらも段階識別メッセージまで検証し、parse を素通りして compile で落ちた
+// ことを固定する。
 func TestRunSchemaCompileErrorExits2(t *testing.T) {
 	broken := filepath.Join(t.TempDir(), "uncompilable.schema.json")
 	if err := os.WriteFile(broken, []byte(`{"$ref": "#/does/not/exist"}`), 0o644); err != nil {
@@ -88,6 +95,9 @@ func TestRunSchemaCompileErrorExits2(t *testing.T) {
 	var stderr bytes.Buffer
 	if got := run(broken, nil, strings.NewReader("{}"), &stderr); got != 2 {
 		t.Errorf("exit=%d want 2 (stderr: %s)", got, stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "コンパイル") {
+		t.Errorf("compile 段階の失敗を示す診断が出ていない: %s", stderr.String())
 	}
 }
 
