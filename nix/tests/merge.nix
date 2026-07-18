@@ -38,6 +38,12 @@ in
     expected = false;
   };
 
+  # 単一モジュールは初期値 { } との畳み込み 1 回で成功する(下限直上で誤発火しない)。
+  testMergeAcceptsSingle = {
+    expr = merges [ { testFoo = 1; } ];
+    expected = true;
+  };
+
   # 空のモジュール列は初期値 { } を返して成功する(下限で誤発火しない)。
   testMergeAcceptsEmpty = {
     expr = merges [ ];
