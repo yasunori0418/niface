@@ -1,7 +1,6 @@
 package spec
 
 import (
-	"bytes"
 	"os"
 	"testing"
 )
@@ -15,7 +14,7 @@ func TestSchemaV1MatchesSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("正本 schema 読み込み: %v", err)
 	}
-	if !bytes.Equal(SchemaV1(), source) {
+	if SchemaV1JSON != string(source) {
 		t.Error("embed した schema が正本 schema/v1/envelope.schema.json とバイト一致しない。go generate ./... で同期すること")
 	}
 }
@@ -25,22 +24,7 @@ func TestIDVectorsV1MatchesSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("正本 id-vectors 読み込み: %v", err)
 	}
-	if !bytes.Equal(IDVectorsV1(), source) {
+	if IDVectorsV1JSON != string(source) {
 		t.Error("embed した id-vectors が正本 testdata/v1/id-vectors.json とバイト一致しない。go generate ./... で同期すること")
-	}
-}
-
-// 返り値が防御的コピーであること(呼び出し側の mutate が以降の呼び出しに
-// 波及しないこと)は公開 API の契約なので固定する。
-func TestReturnedBytesAreCopies(t *testing.T) {
-	s := SchemaV1()
-	s[0] = 'X'
-	if bytes.Equal(s, SchemaV1()) {
-		t.Error("SchemaV1 の返り値の変更が次回呼び出しへ波及した(防御的コピーになっていない)")
-	}
-	v := IDVectorsV1()
-	v[0] = 'X'
-	if bytes.Equal(v, IDVectorsV1()) {
-		t.Error("IDVectorsV1 の返り値の変更が次回呼び出しへ波及した(防御的コピーになっていない)")
 	}
 }

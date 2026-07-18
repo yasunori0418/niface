@@ -12,4 +12,4 @@ import "github.com/yasunori0418/niface/go/internal/spec"
 // 表記判定(spec §5)が壊れ、DeriveID が全件エラーになる。
 //
 // 返り値は呼び出しごとに新しいスライスで、変更しても内部状態に影響しない。
-func IDVectorsV1() []byte { return spec.IDVectorsV1() }
+func IDVectorsV1() []byte { return []byte(spec.IDVectorsV1JSON) }
