@@ -29,6 +29,27 @@ func TestNewDefaultCheckerAcceptsValidTestdata(t *testing.T) {
 	}
 }
 
+// default checker 自身が invalid を弾くことも 1 件直接検証する。バイト一致 +
+// 正本での invalid 拒否からの帰結に頼らず、将来 default 経路だけコンパイル設定
+// (AssertFormat 等)が分岐した場合も検知できるようにする。
+func TestNewDefaultCheckerRejectsInvalidTestdata(t *testing.T) {
+	c, err := NewDefaultChecker()
+	if err != nil {
+		t.Fatalf("NewDefaultChecker: %v", err)
+	}
+	files, _ := filepath.Glob(filepath.Join(testdataGlob, "invalid", "*.json"))
+	if len(files) == 0 {
+		t.Fatal("invalid testdata が見つからない")
+	}
+	doc, err := os.ReadFile(files[0])
+	if err != nil {
+		t.Fatalf("%s 読み込み: %v", files[0], err)
+	}
+	if fs := c.Check(doc); len(fs) == 0 {
+		t.Errorf("invalid %s が違反ゼロで通過した", filepath.Base(files[0]))
+	}
+}
+
 // 防御的コピー(呼び出し側の mutate が次回呼び出しへ波及しない)は公開 API の
 // 契約なので固定する。
 func TestSchemaV1IsDefensiveCopy(t *testing.T) {
