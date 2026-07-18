@@ -27,9 +27,11 @@ func newChecker(t *testing.T) *Checker {
 	return c
 }
 
-// valid/ は schema + lint を全通過しなければならない。
-func TestValidTestdataConforms(t *testing.T) {
-	c := newChecker(t)
+// assertAcceptsValid は checker が valid testdata を全件違反ゼロで通すことを
+// 検証する。検証ループはここに一本化し、ファイル schema 経路(本ファイル)と
+// embed 経路(default_test.go)で共有する。
+func assertAcceptsValid(t *testing.T, c *Checker) {
+	t.Helper()
 	files, _ := filepath.Glob(filepath.Join(testdataGlob, "valid", "*.json"))
 	if len(files) == 0 {
 		t.Fatal("valid testdata が見つからない")
@@ -43,6 +45,30 @@ func TestValidTestdataConforms(t *testing.T) {
 			t.Errorf("valid %s が違反を出した: %v", filepath.Base(p), fs)
 		}
 	}
+}
+
+// assertRejectsInvalid は checker が invalid testdata を全件(schema か lint の
+// いずれかで)弾くことを検証する。assertAcceptsValid と同じく両経路で共有する。
+func assertRejectsInvalid(t *testing.T, c *Checker) {
+	t.Helper()
+	files, _ := filepath.Glob(filepath.Join(testdataGlob, "invalid", "*.json"))
+	if len(files) == 0 {
+		t.Fatal("invalid testdata が見つからない")
+	}
+	for _, p := range files {
+		doc, err := os.ReadFile(p)
+		if err != nil {
+			t.Fatalf("%s 読み込み: %v", p, err)
+		}
+		if fs := c.Check(doc); len(fs) == 0 {
+			t.Errorf("invalid %s が弾かれなかった", filepath.Base(p))
+		}
+	}
+}
+
+// valid/ は schema + lint を全通過しなければならない。
+func TestValidTestdataConforms(t *testing.T) {
+	assertAcceptsValid(t, newChecker(t))
 }
 
 // startedAt / finishedAt の RFC 3339 は format assertion で強制する（§2, §8, ADR-0025）。
@@ -111,18 +137,5 @@ func TestFormatAssertionRejectsBadDateTime(t *testing.T) {
 
 // invalid/ は schema か lint のいずれかで必ず弾かれなければならない。
 func TestInvalidTestdataRejected(t *testing.T) {
-	c := newChecker(t)
-	files, _ := filepath.Glob(filepath.Join(testdataGlob, "invalid", "*.json"))
-	if len(files) == 0 {
-		t.Fatal("invalid testdata が見つからない")
-	}
-	for _, p := range files {
-		doc, err := os.ReadFile(p)
-		if err != nil {
-			t.Fatalf("%s 読み込み: %v", p, err)
-		}
-		if fs := c.Check(doc); len(fs) == 0 {
-			t.Errorf("invalid %s が弾かれなかった", filepath.Base(p))
-		}
-	}
+	assertRejectsInvalid(t, newChecker(t))
 }

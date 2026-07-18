@@ -18,9 +18,12 @@ niface — n プレフィックスツール群(nput / nboot / nwrap / nherd / ns
 nix flake check                    # id-vectors / go(適合検証 + ベクタ通過)を一括検証
 cd go && go test ./...             # id-vectors 通過 + testdata 適合検証
 nix run .#validate -- <file.json>  # 単一エンベロープを適合検証(niface-validate)
+cd go && go generate ./...         # 正本(schema / id-vectors)変更後に embed コピーを手動同期
 ```
 
 `testdata/v1/id-vectors.json` が言語間互換の要。id 導出実装(go/・nix/)を触ったら必ず全ベクタ通過を確認する。
+
+正本(`schema/v1/`・`testdata/v1/id-vectors.json`)を変更したら `go generate ./...` で `go/internal/spec/` の embed コピーを同期する(自動では走らない)。同期し忘れは go test のバイト完全一致検査が CI で検出する。
 
 ## 不変条件
 

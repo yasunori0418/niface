@@ -125,6 +125,26 @@ func main() {
 
 ツールを知らない消費側は info を `json.RawMessage` でパラメータ化(`niface.Envelope[json.RawMessage, json.RawMessage, json.RawMessage, json.RawMessage]`)し、規格部分だけを型安全に扱える。
 
+### 自ツールのテストで適合検証と id 整合を固定する
+
+schema と id-vectors は go module に embed されている(正本とのバイト完全一致を niface 側の CI が保証)。consumer は module 依存だけで適合検証・id 整合検証をテストへ組み込め、schema や id-vectors を手動で vendored copy する必要はない。
+
+```go
+import "github.com/yasunori0418/niface/go/conformance"
+
+// 適合検証: 自ツールの出力(適合しているべき正のサンプル)が
+// 規格 schema + lint を通ることをテストで固定する。
+chk, err := conformance.NewDefaultChecker()
+if err != nil {
+	t.Fatal(err)
+}
+if findings := chk.Check(envelopeJSON); len(findings) > 0 {
+	t.Errorf("niface 不適合: %v", findings)
+}
+```
+
+schema の生 bytes が要る場合は `conformance.SchemaV1()`、id-vectors の生 bytes は `niface.IDVectorsV1()`(補助 API)。id 導出を `DeriveID` に委ねるツールは id-vectors の検証が module のテストで担われているため不要で、`IDVectorsV1` は id 導出を自前実装する場合の整合固定に使う。デコード時の注意(UseNumber 必須)は godoc を参照。
+
 ## 単発検証
 
 エンベロープ 1 件を手元で検証する口として、niface が提供する `validate` app を使える。ツール側リポジトリに何も足さずに CI ログや手元で使える。

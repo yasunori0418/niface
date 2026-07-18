@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/yasunori0418/niface/schema/v1/envelope.schema.json",
+  "title": "niface envelope (specVersion 1)",
+  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。トップレベルは常に results[](主体ごとの結果)を持つ。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specVersion", "tool", "command", "status", "dryRun", "startedAt", "finishedAt", "results"],
+  "properties": {
+    "specVersion": { "type": "integer", "const": 1 },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "command": { "type": "string", "minLength": 1 },
+    "status": {
+      "description": "集約成否。results のいずれかが error、または主体列挙前の全体エラーがあれば error",
+      "enum": ["success", "error"]
+    },
+    "dryRun": { "type": "boolean" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "errors": {
+      "description": "主体の列挙・解決の前段で起きる全体エラーのみ(入力 parse 失敗・specVersion 不能・主体列挙自体の失敗等)。解決済み主体に紐づくエラーは subjectResult.errors に置く",
+      "type": "array",
+      "items": { "$ref": "#/$defs/error" }
+    },
+    "warnings": {
+      "description": "実行全体に関わる警告(主体に紐づかないもの)。解決済み主体に紐づく警告は subjectResult.warnings に、処理単位に紐づく警告は item.warnings に置く",
+      "type": "array",
+      "items": { "$ref": "#/$defs/warning" }
+    },
+    "info": {
+      "description": "実行全体のツール固有情報(主体に紐づかないもの)。主体ごとのツール固有情報は result.info に置く",
+      "type": "object"
+    },
+    "results": {
+      "description": "主体ごとの結果。0 以上の要素",
+      "type": "array",
+      "items": { "$ref": "#/$defs/subjectResult" }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "§2 status 集約: status=error は errors 非空、または status=error の result を要する",
+      "if": { "properties": { "status": { "const": "error" } } },
+      "then": {
+        "anyOf": [
+          { "required": ["errors"], "properties": { "errors": { "minItems": 1 } } },
+          { "properties": { "results": { "contains": { "properties": { "status": { "const": "error" } } } } } }
+        ]
+      }
+    },
+    {
+      "$comment": "§2 status 集約: status=success は errors 空かつ error 主体なしを要する",
+      "if": { "properties": { "status": { "const": "success" } } },
+      "then": {
+        "properties": {
+          "errors": { "maxItems": 0 },
+          "results": { "not": { "contains": { "properties": { "status": { "const": "error" } } } } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "description": "sha256(JCS(identity)) の lowercase hex",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "description": "共通コード E_<NAME>、またはツール別 E_<TOOL>_<NAME>",
+          "type": "string",
+          "pattern": "^E_[A-Z][A-Z0-9_]*$"
+        },
+        "message": { "type": "string" },
+        "detail": { "type": "object" }
+      }
+    },
+    "warning": {
+      "description": "警告。構造は error と同形だが code は W_ prefix に限定",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "description": "共通コード W_<NAME>、またはツール別 W_<TOOL>_<NAME>",
+          "type": "string",
+          "pattern": "^W_[A-Z][A-Z0-9_]*$"
+        },
+        "message": { "type": "string" },
+        "detail": { "type": "object" }
+      }
+    },
+    "subject": {
+      "description": "操作の主体を名指す弱い識別子。id 導出には関与しない。name は 1 エンベロープ内で一意(producer MUST)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "generation": {
+      "description": "profile 世代遷移の観測記録。before / after は実行開始 / 終了時点で profile が指していた世代番号(観測できない場合はそれぞれ省略)。plan / dry-run では after = before",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile"],
+      "properties": {
+        "profile": { "type": "string", "minLength": 1 },
+        "before": { "type": "integer", "minimum": 1 },
+        "after": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "subjectResult": {
+      "description": "results[] の要素。1 主体分の実行結果。subject は常時必須",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "status", "startedAt", "finishedAt", "result"],
+      "properties": {
+        "subject": { "$ref": "#/$defs/subject" },
+        "status": { "enum": ["success", "error"] },
+        "generation": { "$ref": "#/$defs/generation" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "finishedAt": { "type": "string", "format": "date-time" },
+        "errors": {
+          "description": "この主体に紐づく全体エラー(この主体の item に紐づかないもの。例: この主体の profile lock 取得失敗)",
+          "type": "array",
+          "items": { "$ref": "#/$defs/error" }
+        },
+        "warnings": {
+          "description": "この主体に紐づく警告(この主体の item に紐づかないもの)",
+          "type": "array",
+          "items": { "$ref": "#/$defs/warning" }
+        },
+        "result": { "$ref": "#/$defs/result" }
+      },
+      "allOf": [
+        {
+          "$comment": "§2 subject.status: error は failed item、または errors 非空を要する",
+          "if": { "properties": { "status": { "const": "error" } } },
+          "then": {
+            "anyOf": [
+              { "required": ["errors"], "properties": { "errors": { "minItems": 1 } } },
+              { "properties": { "result": { "properties": { "items": { "contains": { "properties": { "status": { "const": "failed" } } } } } } } }
+            ]
+          }
+        },
+        {
+          "$comment": "§2 subject.status: success は failed item を含まずかつ errors 空を要する",
+          "if": { "properties": { "status": { "const": "success" } } },
+          "then": {
+            "properties": {
+              "errors": { "maxItems": 0 },
+              "result": { "properties": { "items": { "not": { "contains": { "properties": { "status": { "const": "failed" } } } } } } }
+            }
+          }
+        }
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+        "changes": { "type": "array", "items": { "$ref": "#/$defs/change" } },
+        "info": { "type": "object" }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "status": { "enum": ["success", "failed", "skipped"] },
+        "error": { "$ref": "#/$defs/error" },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } },
+        "info": { "type": "object" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "failed" } } },
+          "then": { "required": ["id", "kind", "status", "error"] }
+        }
+      ]
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "itemId", "reversible"],
+      "properties": {
+        "kind": { "enum": ["add", "remove", "modify"] },
+        "itemId": { "$ref": "#/$defs/id" },
+        "reversible": { "type": "boolean" },
+        "info": { "type": "object" }
+      }
+    }
+  }
+}

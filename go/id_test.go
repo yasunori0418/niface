@@ -29,28 +29,25 @@ type vectorFile struct {
 	} `json:"rejected"`
 }
 
-// loadVectors は id-vectors.json を UseNumber でデコードする。JSON 数値を
-// json.Number(元の字句表現)として保持し、表記(1 と 1.0)を区別するため
-// (spec §5・DeriveID の表記判定と揃える)。
-func loadVectors(t *testing.T) vectorFile {
+// assertVectorFile は id-vectors 表(raw JSON)の全 vectors で DeriveID が期待値と
+// 一致し、全 rejected が域外としてエラー拒否されることを検証する(spec §5・
+// 言語間で導出と拒否を担保)。UseNumber でデコードして JSON 数値を
+// json.Number(元の字句表現)として保持し、表記(1 と 1.0)を区別する
+// (spec §5・DeriveID の表記判定と揃える)。照合ロジックはここに一本化し、
+// 正本ファイル経路(本ファイル)と embed 経路(vectors_test.go)で共有する。
+func assertVectorFile(t *testing.T, raw []byte) {
 	t.Helper()
-	raw, err := os.ReadFile("../testdata/v1/id-vectors.json")
-	if err != nil {
-		t.Fatal(err)
-	}
 	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.UseNumber()
 	var vf vectorFile
 	if err := dec.Decode(&vf); err != nil {
 		t.Fatal(err)
 	}
-	return vf
-}
-
-func TestDeriveIDVectors(t *testing.T) {
-	vf := loadVectors(t)
 	if len(vf.Vectors) == 0 {
 		t.Fatal("no vectors found in id-vectors.json")
+	}
+	if len(vf.Rejected) == 0 {
+		t.Fatal("no rejected vectors found in id-vectors.json")
 	}
 	for i, v := range vf.Vectors {
 		got, err := DeriveID(Identity{Kind: v.Identity.Kind, Key: v.Identity.Key})
@@ -62,20 +59,21 @@ func TestDeriveIDVectors(t *testing.T) {
 			t.Errorf("vector %d: got %s want %s (canonical: %s)", i, got, v.Expected, v.Canonical)
 		}
 	}
-}
-
-// TestDeriveIDRejectedVectors は域外 identity(rejected ベクタ)が
-// id 導出時にエラーで拒否されることを検証する(spec §5・言語間で拒否を担保)。
-func TestDeriveIDRejectedVectors(t *testing.T) {
-	vf := loadVectors(t)
-	if len(vf.Rejected) == 0 {
-		t.Fatal("no rejected vectors found in id-vectors.json")
-	}
 	for i, v := range vf.Rejected {
 		if _, err := DeriveID(Identity{Kind: v.Identity.Kind, Key: v.Identity.Key}); err == nil {
 			t.Errorf("rejected vector %d: expected error but got none (reason: %s)", i, v.Reason)
 		}
 	}
+}
+
+// TestDeriveIDVectors は正本 id-vectors.json の全ベクタ(vectors + rejected)を
+// 検証する。
+func TestDeriveIDVectors(t *testing.T) {
+	raw, err := os.ReadFile("../testdata/v1/id-vectors.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertVectorFile(t, raw)
 }
 
 // TestDeriveIDIntegerDomain は int / int64 経路の ±(2^53−1) ガードを検証する。

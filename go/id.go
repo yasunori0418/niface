@@ -46,12 +46,23 @@ func checkIntRange(n int64) error {
 }
 
 // Identity は item id の導出元。
+//
+// Key を JSON からデコードして持ち込む場合は json.Decoder の UseNumber を必ず
+// 有効にすること。標準の json.Unmarshal は JSON 数値を全て float64 へ落とすため、
+// 整数を含む key が表記判定(spec §5)で域外となり DeriveID がエラーになる。
 type Identity struct {
 	Kind string `json:"kind"`
 	Key  any    `json:"key"`
 }
 
-// DeriveID は identity から item id を導出する。
+// DeriveID は identity から item id(sha256(JCS(identity)) の 64 文字 lowercase
+// hex)を導出する。
+//
+// 入力契約: id.Key は spec §5 の値域(文字列 / 整数 ±(2^53−1) / bool / null /
+// 配列 / オブジェクト(メンバー名 ASCII))に収まる値であること。域外はエラーで
+// 拒否する。整数は int / int64 / json.Number(整数表記)で渡す。float64 は値が
+// 整数でも域外(表記を判定できないため)なので、JSON 経由の key は Identity の
+// doc にある通り UseNumber でデコードすること。
 func DeriveID(id Identity) (string, error) {
 	m := map[string]any{"kind": id.Kind, "key": id.Key}
 	c, err := canonicalize(m)
