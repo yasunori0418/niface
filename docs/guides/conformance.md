@@ -78,6 +78,22 @@ go get github.com/yasunori0418/niface/go@v1.0.0
 
 ツールを知らない消費側は info を `json.RawMessage` でパラメータ化(`niface.Envelope[json.RawMessage, json.RawMessage, json.RawMessage, json.RawMessage]`)し、規格部分だけを型安全に扱える。
 
+### 未使用の info スロットは `*struct{}` で塞ぐ
+
+未使用の info スロット(`TInfo` / `TEnvInfo`)には非ポインタの `struct{}` ではなく nil ポインタ型 `*struct{}` を使う。`info` フィールドは `omitempty` だが非ポインタ struct には omitempty が効かず、`struct{}` を使うと envelope 直下と result 内の双方に `"info":{}` が出力される。schema 違反ではない(info は type:object の optional・ADR-0018)が、「未使用スロットは出力に現れない」自然な期待を裏切るため、`*struct{}` の nil で塞ぐ。
+
+`TItem` は `Items` が非 omitempty で常に出るスロットなので、item を持たないコマンドでも `*struct{}` にする必要はない。`TChange` は `Result.Changes` 自体が omitempty のため、changes が空なら `struct{}` / `*struct{}` の別は出力に現れない。
+
+### multi-command producer
+
+1 つの tool が複数 command(例: `apply` / `list-generations` / `init`)を持ち command ごとに info 型が異なる場合、1 回の実行では command は 1 つに定まり info 型も静的に決まる。ただし複数 command の結果をプロセス全域で 1 つの変数に貯めようとすると、command ごとに `Envelope` の型パラメータが異なるため単一の静的 generic 型では宣言できない、という producer 実装上の課題がある。
+
+niface 側に新しい API を足す必要はない。`Envelope` は既に `MarshalJSON` を実装しており、型パラメータの異なる `Envelope` 値も Go 標準の `json.Marshaler`(非 generic な interface)として一様に扱える。command ごとに `Envelope` を型付き実体化し、プロセス全域では `json.Marshaler` で型消去して扱う。未使用スロットは前節の通り `*struct{}` にする。
+
+最小骨組みは testable Example にある。
+
+- `go/example_conformance_test.go` の `ExampleEnvelope_multiCommand`([source](../../go/example_conformance_test.go) / [pkg.go.dev](https://pkg.go.dev/github.com/yasunori0418/niface/go#example-Envelope-multiCommand))
+
 ### 自ツールのテストで適合検証と id 整合を固定する
 
 schema と id-vectors は go module に embed されている(正本とのバイト完全一致を niface 側の CI が保証)。consumer は module 依存だけで適合検証・id 整合検証をテストへ組み込め、schema や id-vectors を手動で vendored copy する必要はない。
