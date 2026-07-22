@@ -70,58 +70,11 @@ Go 製ツールは go module を取り込み、エンベロープ型を共有し
 go get github.com/yasunori0418/niface/go@v1.0.0
 ```
 
-```go
-package main
+構築例のコードは testable Example として go/ 配下に置き、go test でコンパイル追随を CI に強制する(型が動けば `nix flake check` が落ちる)。ドキュメントとコードの二重管理を避けるため、写経元はこちらを一次参照とする。
 
-import (
-	"encoding/json"
-	"os"
-	"time"
+- `go/example_conformance_test.go` の `ExampleEnvelope`([source](../../go/example_conformance_test.go) / [pkg.go.dev](https://pkg.go.dev/github.com/yasunori0418/niface/go#example-Envelope))
 
-	niface "github.com/yasunori0418/niface/go"
-)
-
-// ツール固有情報の型。エンベロープの Info スロットに載せる(規格型は info 配下のみ拡張可)。
-type PutInfo struct {
-	Target string `json:"target"`
-}
-
-func main() {
-	started := time.Now().Format(time.RFC3339)
-
-	// item id は identity({kind, key})から機械導出する。値域外(spec §5)は error。
-	id, err := niface.DeriveID(niface.Identity{Kind: "file", Key: "/etc/hosts"})
-	if err != nil {
-		panic(err)
-	}
-
-	// Envelope は 4 つの型引数 [TItem, TChange, TInfo, TEnvInfo] を取る。
-	// 自ツールの info 型でパラメータ化して型付きで組み立てる。
-	// startedAt / finishedAt は必須で、RFC 3339 形式でないと適合検証で弾かれる(spec §2)。
-	env := niface.Envelope[PutInfo, struct{}, struct{}, struct{}]{
-		SpecVersion: 1,
-		Tool:        niface.Tool{Name: "nput", Version: "0.9.0"},
-		Command:     "apply",
-		Status:      niface.StatusSuccess,
-		StartedAt:   started,
-		FinishedAt:  time.Now().Format(time.RFC3339),
-		Results: []niface.SubjectResult[PutInfo, struct{}, struct{}]{
-			{
-				Subject:    niface.Subject{Name: "home"},
-				Status:     niface.StatusSuccess,
-				StartedAt:  started,
-				FinishedAt: time.Now().Format(time.RFC3339),
-				Result: niface.Result[PutInfo, struct{}, struct{}]{
-					Items: []niface.Item[PutInfo]{
-						{ID: id, Kind: "file", Status: niface.ItemSuccess, Info: PutInfo{Target: "/etc/hosts"}},
-					},
-				},
-			},
-		},
-	}
-	_ = json.NewEncoder(os.Stdout).Encode(env)
-}
-```
+`Envelope` は 4 つの型引数 `[TItem, TChange, TInfo, TEnvInfo]` を取り、自ツールの info 型でパラメータ化して型付きで組み立てる。`startedAt` / `finishedAt` / `dryRun` は必須(spec §2)で、`startedAt` / `finishedAt` は RFC 3339 形式でないと適合検証で弾かれる。`dryRun` は bool の zero value でも出力に含まれる必要があるため、Go 側で明示せず zero value に頼るなら `omitempty` を付けないこと。item id は identity(`{kind, key}`)から `DeriveID` で機械導出する。値域外(spec §5)は error。
 
 ツールを知らない消費側は info を `json.RawMessage` でパラメータ化(`niface.Envelope[json.RawMessage, json.RawMessage, json.RawMessage, json.RawMessage]`)し、規格部分だけを型安全に扱える。
 
@@ -129,19 +82,11 @@ func main() {
 
 schema と id-vectors は go module に embed されている(正本とのバイト完全一致を niface 側の CI が保証)。consumer は module 依存だけで適合検証・id 整合検証をテストへ組み込め、schema や id-vectors を手動で vendored copy する必要はない。
 
-```go
-import "github.com/yasunori0418/niface/go/conformance"
+検証コードの写経元は同様に go/ 配下の Example にある。
 
-// 適合検証: 自ツールの出力(適合しているべき正のサンプル)が
-// 規格 schema + lint を通ることをテストで固定する。
-chk, err := conformance.NewDefaultChecker()
-if err != nil {
-	t.Fatal(err)
-}
-if findings := chk.Check(envelopeJSON); len(findings) > 0 {
-	t.Errorf("niface 不適合: %v", findings)
-}
-```
+- `go/conformance/example_test.go` の `ExampleChecker_Check`([source](../../go/conformance/example_test.go) / [pkg.go.dev](https://pkg.go.dev/github.com/yasunori0418/niface/go/conformance#example-Checker.Check))
+
+`NewDefaultChecker` は embed 済みの正本 schema をコンパイルした `Checker` を返す。`Check(envelopeJSON)` は違反メッセージのスライスを返し、空スライスなら適合。Example は Example 慣例に沿って `panic(err)` を使うため、自ツールのテスト関数へ組み込むときは `t.Fatal(err)` / `t.Errorf("niface 不適合: %v", findings)` に置き換える。
 
 schema の生 bytes が要る場合は `conformance.SchemaV1()`、id-vectors の生 bytes は `niface.IDVectorsV1()`(補助 API)。id 導出を `DeriveID` に委ねるツールは id-vectors の検証が module のテストで担われているため不要で、`IDVectorsV1` は id 導出を自前実装する場合の整合固定に使う。デコード時の注意(UseNumber 必須)は godoc を参照。
 
