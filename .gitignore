@@ -30,5 +30,5 @@ result-*
 # ---- direnv ----
 .direnv/
 
-# ---- nput 配置物（dev の shellHook が nput apply skills で生成）----
+# ---- layat 配置物（dev の shellHook が layat apply skills で生成）----
 .claude/skills/*
