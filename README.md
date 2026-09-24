@@ -115,7 +115,7 @@ nix run .#validate -- path/to/envelope.json
 
 ## Development environment
 
-Copy the template `.envrc` and allow direnv. It loads the flake under `dev/` (`use flake ./dev`), which installs the dev tooling and places mattpocock/skills into `.claude/skills/` via nput's project mode.
+Copy the template `.envrc` and allow direnv. It loads the flake under `dev/` (`use flake ./dev`), which installs the dev tooling and places mattpocock/skills into `.claude/skills/` via layat's project mode.
 
 ```sh
 cp example.envrc .envrc && direnv allow    # or: nix develop ./dev

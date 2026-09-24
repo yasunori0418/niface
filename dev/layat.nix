@@ -1,17 +1,17 @@
-# mattpocock/skills を niface repo root の .claude/skills/ へ配置する nput の
+# mattpocock/skills を niface repo root の .claude/skills/ へ配置する layat の
 # project mode config を flake-parts module として切り出す。
-# nput の flakeModules.default（dev/flake.nix の imports が読む）を前提に、
-# perSystem.nput.skills へ manifest を宣言する。
+# layat の flakeModules.default（dev/flake.nix の imports が読む）を前提に、
+# perSystem.layat.skills へ manifest を宣言する。
 #
-# `nput apply skills -f <dev flake>` でビルドし、各 skill を .claude/skills/<name>
+# `layat apply skills -f <dev flake>` でビルドし、各 skill を .claude/skills/<name>
 # へ store-symlink 配置する。root = projectRoot（git toplevel）なので配置先は
 # repo root 配下。配置物は .gitignore 済み（.claude/skills/*）の ephemeral。
 { inputs, ... }:
 let
-  nputLib = inputs.nput.lib;
+  layatLib = inputs.layat.lib;
 
   # 展開する skill を明示列挙する（mattpocock/skills の skills/ 配下の相対パス）。
-  # nput のドッグフーディング構成と同じ集合を配置する。
+  # layat のドッグフーディング構成と同じ集合を配置する。
   skillSubpaths = [
     "engineering/grill-with-docs"
     "engineering/improve-codebase-architecture"
@@ -41,10 +41,10 @@ in
   perSystem =
     { pkgs, ... }:
     {
-      # perSystem.nput.skills → flake.nput.<system>.skills へ自動転置される（nput flakeModule）。
-      nput.skills = nputLib.mkManifest {
+      # perSystem.layat.skills → flake.layat.<system>.skills へ自動転置される（layat flakeModule）。
+      layat.skills = layatLib.mkManifest {
         inherit pkgs;
-        root = nputLib.projectRoot;
+        root = layatLib.projectRoot;
         entries = skillEntries;
       };
     };
