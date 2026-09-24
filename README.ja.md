@@ -113,7 +113,7 @@ nix run .#validate -- path/to/envelope.json
 
 ## 開発環境
 
-テンプレートを `.envrc` にコピーして direnv を許可する。`.envrc` は `dev/` の flake を読み込み（`use flake ./dev`）、開発ツールを入れて mattpocock/skills を nput の project mode で `.claude/skills/` へ配置する。
+テンプレートを `.envrc` にコピーして direnv を許可する。`.envrc` は `dev/` の flake を読み込み（`use flake ./dev`）、開発ツールを入れて mattpocock/skills を layat の project mode で `.claude/skills/` へ配置する。
 
 ```sh
 cp example.envrc .envrc && direnv allow    # または: nix develop ./dev

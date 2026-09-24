@@ -45,7 +45,7 @@ cd go && go generate ./...         # 正本(schema / id-vectors)変更後に emb
 
 ## 開発環境
 
-`flake.nix` は flake-parts ベース(規格の lib と checks を提供)。開発環境は `dev/flake.nix` にあり、`.envrc`(`use flake ./dev`)で読み込む。direnv 許可で mattpocock/skills が nput の project mode で `.claude/skills/` へ配置される。
+`flake.nix` は flake-parts ベース(規格の lib と checks を提供)。開発環境は `dev/flake.nix` にあり、`.envrc`(`use flake ./dev`)で読み込む。direnv 許可で mattpocock/skills が layat の project mode で `.claude/skills/` へ配置される。
 
 ## Agent 向けドキュメント
 
