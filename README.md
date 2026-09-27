@@ -2,7 +2,7 @@
 
 *Read this in [Japanese (日本語)](README.ja.md).*
 
-**n**-tools **i**nter**face** — a shared JSON specification for the Nix-based system-management tools (nput / nboot / nwrap / nherd / nshadow / ncompose): every tool reports its execution results to stdout as a single structured JSON document (the result envelope).
+**outturn** — a result envelope specification. Every tool in the ecosystem reports its execution results to stdout as a single structured JSON document (the result envelope); *outturn* is the plain English word for what actually came out of a run, which is exactly what the envelope records. The spec asks only two things of a tool: that its output conforms to the envelope and that it runs standalone (spec §8). It does not depend on Nix, on any implementation language, or on any particular tool. Which tools make up the ecosystem is documented in [docs/ecosystem/](docs/ecosystem/).
 
 In a UNIX-philosophy ecosystem where each tool has a single responsibility and they compose through pipes to form a distribution, outturn defines the bore of the plumbing for result reporting. Any tool, written in any language, can join a pipeline as long as it conforms to the spec. The shape of each tool's *input* JSON is owned and published by that tool, not by this spec (see ADR-0014).
 

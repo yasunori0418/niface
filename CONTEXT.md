@@ -1,6 +1,6 @@
 # outturn
 
-n プレフィックスツール群（nput / nboot / nwrap / nherd / nshadow / ncompose）の実行結果を単一の構造化 JSON（結果エンベロープ）として stdout に出力するための共通規格の用語集。
+結果エンベロープ規格 outturn の用語集。outturn は、エコシステムの各ツールが実行結果を単一の構造化 JSON(結果エンベロープ)として stdout に出力するための共通規格で、ツールに要求するのはエンベロープへの適合と standalone 性のみ。
 
 ここは glossary であり仕様書ではない。規範は `spec/v1/spec.md`、設計判断は `docs/adr/` に置く。正名と、避けるべき同義語を固定する。
 
