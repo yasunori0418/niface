@@ -10,12 +10,12 @@ package conformance_test
 // が担う。
 //
 // Example は Example 慣例に沿って `panic(err)` を使うが、自ツールのテストへ組み
-// 込むときは `t.Fatal(err)` / `t.Errorf("niface 不適合: %v", findings)` に置き換える。
+// 込むときは `t.Fatal(err)` / `t.Errorf("outturn 不適合: %v", findings)` に置き換える。
 
 import (
 	"fmt"
 
-	"github.com/yasunori0418/niface/go/conformance"
+	"github.com/yasunori0418/outturn/go/conformance"
 )
 
 func ExampleChecker_Check() {
@@ -36,6 +36,6 @@ func ExampleChecker_Check() {
   "results": []
 }`)
 	if findings := chk.Check(envelopeJSON); len(findings) > 0 {
-		fmt.Printf("niface 不適合: %v\n", findings)
+		fmt.Printf("outturn 不適合: %v\n", findings)
 	}
 }

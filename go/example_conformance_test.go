@@ -1,4 +1,4 @@
-package niface_test
+package outturn_test
 
 // 適合ガイド(docs/guides/conformance.md)の go module 経路の Go 例の正本。
 // ガイド本文からはここへリンクだけ張り、コードの二重管理を避ける。
@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"os"
 
-	niface "github.com/yasunori0418/niface/go"
+	outturn "github.com/yasunori0418/outturn/go"
 )
 
 // PutInfo はツール固有情報の型。エンベロープの Info スロットに載せる(規格型は info 配下のみ拡張可)。
@@ -42,7 +42,7 @@ func ExampleEnvelope() {
 	// omitempty のため出力には現れないが、他スロットと揃えて `*struct{}` にする。
 
 	// item id は identity({kind, key})から機械導出する。値域外(spec §5)は error。
-	id, err := niface.DeriveID(niface.Identity{Kind: "file", Key: "/etc/hosts"})
+	id, err := outturn.DeriveID(outturn.Identity{Kind: "file", Key: "/etc/hosts"})
 	if err != nil {
 		panic(err)
 	}
@@ -57,23 +57,23 @@ func ExampleEnvelope() {
 
 	// Envelope は 4 つの型引数 [TItem, TChange, TInfo, TEnvInfo] を取る。
 	// 自ツールの info 型でパラメータ化して型付きで組み立てる。
-	env := niface.Envelope[PutInfo, *struct{}, *struct{}, *struct{}]{
+	env := outturn.Envelope[PutInfo, *struct{}, *struct{}, *struct{}]{
 		SpecVersion: 1,
-		Tool:        niface.Tool{Name: "nput", Version: "0.9.0"},
+		Tool:        outturn.Tool{Name: "nput", Version: "0.9.0"},
 		Command:     "apply",
-		Status:      niface.StatusSuccess,
+		Status:      outturn.StatusSuccess,
 		DryRun:      false,
 		StartedAt:   startedAt,
 		FinishedAt:  finishedAt,
-		Results: []niface.SubjectResult[PutInfo, *struct{}, *struct{}]{
+		Results: []outturn.SubjectResult[PutInfo, *struct{}, *struct{}]{
 			{
-				Subject:    niface.Subject{Name: "home"},
-				Status:     niface.StatusSuccess,
+				Subject:    outturn.Subject{Name: "home"},
+				Status:     outturn.StatusSuccess,
 				StartedAt:  startedAt,
 				FinishedAt: finishedAt,
-				Result: niface.Result[PutInfo, *struct{}, *struct{}]{
-					Items: []niface.Item[PutInfo]{
-						{ID: id, Kind: "file", Status: niface.ItemSuccess, Info: PutInfo{Target: "/etc/hosts"}},
+				Result: outturn.Result[PutInfo, *struct{}, *struct{}]{
+					Items: []outturn.Item[PutInfo]{
+						{ID: id, Kind: "file", Status: outturn.ItemSuccess, Info: PutInfo{Target: "/etc/hosts"}},
 					},
 				},
 			},
@@ -95,7 +95,7 @@ func ExampleEnvelope() {
 // 変数に貯めようとすると、command ごとに Envelope の型パラメータが異なるため
 // 単一の静的 generic 型で宣言できない、という producer 実装上の課題がある。
 //
-// niface に新 API を足す必要はない。`Envelope` は既に `MarshalJSON` を実装しており、
+// outturn に新 API を足す必要はない。`Envelope` は既に `MarshalJSON` を実装しており、
 // 型パラメータの異なる Envelope 値も Go 標準の `json.Marshaler` として一様に扱える。
 //
 // TItem は `Items` が非 omitempty で常に出るスロットのため、item を持たない command
@@ -108,28 +108,28 @@ func ExampleEnvelope_multiCommand() {
 
 	// list-generations: Envelope.Info を GenerationsInfo で型付け、他スロットは *struct{}。
 	// 型追随のため Item[*struct{}] を 1 件入れる(kind=generation, key=home/42)。
-	genID, err := niface.DeriveID(niface.Identity{Kind: "generation", Key: "home/42"})
+	genID, err := outturn.DeriveID(outturn.Identity{Kind: "generation", Key: "home/42"})
 	if err != nil {
 		panic(err)
 	}
-	listGens := niface.Envelope[*struct{}, *struct{}, *struct{}, GenerationsInfo]{
+	listGens := outturn.Envelope[*struct{}, *struct{}, *struct{}, GenerationsInfo]{
 		SpecVersion: 1,
-		Tool:        niface.Tool{Name: "nput", Version: "0.9.0"},
+		Tool:        outturn.Tool{Name: "nput", Version: "0.9.0"},
 		Command:     "list-generations",
-		Status:      niface.StatusSuccess,
+		Status:      outturn.StatusSuccess,
 		DryRun:      false,
 		StartedAt:   startedAt,
 		FinishedAt:  finishedAt,
 		Info:        GenerationsInfo{Current: 42},
-		Results: []niface.SubjectResult[*struct{}, *struct{}, *struct{}]{
+		Results: []outturn.SubjectResult[*struct{}, *struct{}, *struct{}]{
 			{
-				Subject:    niface.Subject{Name: "home"},
-				Status:     niface.StatusSuccess,
+				Subject:    outturn.Subject{Name: "home"},
+				Status:     outturn.StatusSuccess,
 				StartedAt:  startedAt,
 				FinishedAt: finishedAt,
-				Result: niface.Result[*struct{}, *struct{}, *struct{}]{
-					Items: []niface.Item[*struct{}]{
-						{ID: genID, Kind: "generation", Status: niface.ItemSuccess},
+				Result: outturn.Result[*struct{}, *struct{}, *struct{}]{
+					Items: []outturn.Item[*struct{}]{
+						{ID: genID, Kind: "generation", Status: outturn.ItemSuccess},
 					},
 				},
 			},
@@ -137,22 +137,22 @@ func ExampleEnvelope_multiCommand() {
 	}
 
 	// init: Envelope.Info を InitInfo で型付け、他スロットは *struct{}。item は無し。
-	initCmd := niface.Envelope[*struct{}, *struct{}, *struct{}, InitInfo]{
+	initCmd := outturn.Envelope[*struct{}, *struct{}, *struct{}, InitInfo]{
 		SpecVersion: 1,
-		Tool:        niface.Tool{Name: "nput", Version: "0.9.0"},
+		Tool:        outturn.Tool{Name: "nput", Version: "0.9.0"},
 		Command:     "init",
-		Status:      niface.StatusSuccess,
+		Status:      outturn.StatusSuccess,
 		DryRun:      false,
 		StartedAt:   startedAt,
 		FinishedAt:  finishedAt,
 		Info:        InitInfo{Profile: "home"},
-		Results: []niface.SubjectResult[*struct{}, *struct{}, *struct{}]{
+		Results: []outturn.SubjectResult[*struct{}, *struct{}, *struct{}]{
 			{
-				Subject:    niface.Subject{Name: "home"},
-				Status:     niface.StatusSuccess,
+				Subject:    outturn.Subject{Name: "home"},
+				Status:     outturn.StatusSuccess,
 				StartedAt:  startedAt,
 				FinishedAt: finishedAt,
-				Result:     niface.Result[*struct{}, *struct{}, *struct{}]{Items: []niface.Item[*struct{}]{}},
+				Result:     outturn.Result[*struct{}, *struct{}, *struct{}]{Items: []outturn.Item[*struct{}]{}},
 			},
 		},
 	}

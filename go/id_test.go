@@ -1,4 +1,4 @@
-package niface
+package outturn
 
 // id-vectors.json の全ベクタ通過が適合条件。
 // go test ./... を CI で必ず実行すること。
