@@ -1,9 +1,9 @@
-// Command validate(niface-validate)は niface エンベロープを適合検証する。
+// Command validate(outturn-validate)は outturn エンベロープを適合検証する。
 //
 // 使い方:
 //
-//	niface-validate [-schema PATH] [FILE ...]
-//	niface-validate < envelope.json
+//	outturn-validate [-schema PATH] [FILE ...]
+//	outturn-validate < envelope.json
 //
 // FILE を渡せば各ファイルを、省略すれば stdin を 1 文書として検証する。
 // -schema 省略時は embed 済みの正本 schema を使う(リポジトリ外でも自立して
@@ -18,7 +18,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/yasunori0418/niface/go/conformance"
+	"github.com/yasunori0418/outturn/go/conformance"
 )
 
 func main() {

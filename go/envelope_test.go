@@ -1,4 +1,4 @@
-package niface
+package outturn
 
 // testdata/v1/valid の全エンベロープを Envelope 型へ decode する適合テスト。
 // 規格型が valid ベクタの全フィールドを表現できること(未知フィールド禁止で decode)と、

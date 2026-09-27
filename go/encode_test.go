@@ -1,4 +1,4 @@
-package niface
+package outturn
 
 // golden encode 適合テスト。
 // testdata/v1/valid の各エンベロープと同一内容を Go コードから構築して json.Marshal し、

@@ -1,4 +1,4 @@
-// Package conformance は niface エンベロープの適合検証を行う。
+// Package conformance は outturn エンベロープの適合検証を行う。
 //
 // 適合は 2 層で判定する（→ spec/v1/spec.md §8, ADR-0021, ADR-0023, ADR-0025）:
 //   - schema 検証: schema/v1/envelope.schema.json（Draft 2020-12）への適合。
@@ -18,7 +18,7 @@ import (
 
 // schemaURI は schema をコンパイラへ登録する内部 URI。schema の $id とは独立で、
 // 外部 $ref を持たないため fragment 参照（#/$defs/...）の解決に影響しない。
-const schemaURI = "mem:///niface/envelope.schema.json"
+const schemaURI = "mem:///outturn/envelope.schema.json"
 
 // Checker は schema を 1 度コンパイルして複数文書を検査する。
 type Checker struct {

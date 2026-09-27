@@ -1,8 +1,8 @@
 // Package spec は正本(schema/v1・testdata/v1)の embed コピーを保持し、
 // 公開 API(conformance.NewDefaultChecker / conformance.SchemaV1 /
-// niface.IDVectorsV1)へ内容を供給する。
+// outturn.IDVectorsV1)へ内容を供給する。
 //
-// go module(github.com/yasunori0418/niface/go)はサブディレクトリ module で、
+// go module(github.com/yasunori0418/outturn/go)はサブディレクトリ module で、
 // その go:embed は module ルートより上位のディレクトリを参照できない。正本を
 // module 外(repo ルート)に置いたまま consumer へ届けるには、module 内への
 // コピーの embed が必要になる(issue #42)。

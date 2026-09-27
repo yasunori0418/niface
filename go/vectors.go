@@ -1,6 +1,6 @@
-package niface
+package outturn
 
-import "github.com/yasunori0418/niface/go/internal/spec"
+import "github.com/yasunori0418/outturn/go/internal/spec"
 
 // IDVectorsV1 は testdata/v1/id-vectors.json(正本とバイト同一)の生 bytes を返す。
 // id 導出実装が全ベクタで期待値と一致することの検証(言語間互換の固定)に使う。

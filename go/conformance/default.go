@@ -1,6 +1,6 @@
 package conformance
 
-import "github.com/yasunori0418/niface/go/internal/spec"
+import "github.com/yasunori0418/outturn/go/internal/spec"
 
 // NewDefaultChecker は embed 済みの正本 schema(schema/v1/envelope.schema.json と
 // バイト同一)をコンパイルした Checker を返す。consumer は schema ファイルを

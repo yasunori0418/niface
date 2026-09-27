@@ -1,4 +1,4 @@
-package niface
+package outturn
 
 import (
 	"bytes"

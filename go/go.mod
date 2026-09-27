@@ -1,4 +1,4 @@
-module github.com/yasunori0418/niface/go
+module github.com/yasunori0418/outturn/go
 
 go 1.22
 

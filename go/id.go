@@ -1,4 +1,4 @@
-// Package niface は niface 規格(specVersion 1)の型と item id 導出の参照実装。
+// Package outturn は outturn 規格(specVersion 1)の型と item id 導出の参照実装。
 //
 // id 導出: id = lowercase-hex( sha256( JCS( identity ) ) )
 // JCS は RFC 8785。identity の値域は spec §5 に定める制約に従う:
@@ -7,7 +7,7 @@
 // 小数点/指数表記(1.0・1e3 等、値が整数でも)・範囲外の整数・非 ASCII の
 // メンバー名は域外として拒否する(エラーを返す)。制約された値域の上では
 // 本実装はフル JCS と一致する。
-package niface
+package outturn
 
 import (
 	"crypto/sha256"
@@ -28,11 +28,11 @@ const maxSafeInteger = 1<<53 - 1
 
 // 値域違反を分類する sentinel error(errors.Is で判定可能)。具体値は %w で wrap する。
 var (
-	errFloatType    = errors.New("niface: floating-point number is not allowed in identity domain")
-	errNonInteger   = errors.New("niface: number must use integer notation (no fraction/exponent)")
-	errIntegerRange = errors.New("niface: integer is out of identity domain ±(2^53-1)")
-	errNonASCIIKey  = errors.New("niface: object member name must be ASCII")
-	errUnsupported  = errors.New("niface: unsupported type in identity domain")
+	errFloatType    = errors.New("outturn: floating-point number is not allowed in identity domain")
+	errNonInteger   = errors.New("outturn: number must use integer notation (no fraction/exponent)")
+	errIntegerRange = errors.New("outturn: integer is out of identity domain ±(2^53-1)")
+	errNonASCIIKey  = errors.New("outturn: object member name must be ASCII")
+	errUnsupported  = errors.New("outturn: unsupported type in identity domain")
 )
 
 // checkIntRange は整数値 n が identity の値域 ±(2^53−1)(spec §5)に収まるかを
