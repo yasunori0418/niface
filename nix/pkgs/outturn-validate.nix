@@ -1,4 +1,4 @@
-# niface の Go 参照実装(CLI niface-validate)を buildGoModule でビルドする関数。
+# outturn の Go 参照実装(CLI outturn-validate)を buildGoModule でビルドする関数。
 #
 # cmd/validate をビルドし、build 時に go test ./...(id-vectors + testdata 適合
 # 検証)を走らせる。依存は vendorHash で pin した FOD が取得する(vendor は
@@ -7,7 +7,7 @@
 # src はサブディレクトリではなく repo 全体である必要がある。
 #
 # perSystem の packages.validate と flake.lib.mkSchemaCheck の両方がこの関数を
-# 共有し、検証器の呼び出し規約・依存(vendorHash)を niface 側に閉じ込める。
+# 共有し、検証器の呼び出し規約・依存(vendorHash)を outturn 側に閉じ込める。
 { pkgs }:
 pkgs.buildGoModule {
   pname = "outturn-validate";

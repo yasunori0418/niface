@@ -1,5 +1,5 @@
 {
-  description = "niface — n-tools interface: JSON pipe specification for the Nix system-tools ecosystem";
+  description = "outturn — result envelope specification: a single structured JSON document every ecosystem tool writes to stdout to report what actually happened";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -36,7 +36,7 @@
       perSystem =
         { pkgs, ... }:
         let
-          # niface の Go 参照実装(CLI niface-validate)。定義は
+          # outturn の Go 参照実装(CLI outturn-validate)。定義は
           # nix/pkgs/outturn-validate.nix に括り出し、packages.validate /
           # flake.lib.mkSchemaCheck と共有する。
           outturn-go = import ./nix/pkgs/outturn-validate.nix { inherit pkgs; };
@@ -55,7 +55,7 @@
 
           checks = {
             # id 導出の Nix 実装がテストベクタと一致することを検証。
-            id-vectors = pkgs.runCommand "niface-id-vectors"
+            id-vectors = pkgs.runCommand "outturn-id-vectors"
               {
                 passAsFile = [ "result" ];
                 result = builtins.toJSON
@@ -70,8 +70,8 @@
             go = outturn-go;
 
             # 適合ヘルパ mkSchemaCheck 自体の smoke test(dogfooding)。export した
-            # lib.mkSchemaCheck に niface の valid testdata を通し、検証器の配線・
-            # schema 注入・find 集約が壊れていないことを niface 自身の CI で固定する。
+            # lib.mkSchemaCheck に outturn の valid testdata を通し、検証器の配線・
+            # schema 注入・find 集約が壊れていないことを outturn 自身の CI で固定する。
             schema-selftest = inputs.self.lib.mkSchemaCheck {
               inherit pkgs;
               testdataDir = ./testdata/v1/valid;
@@ -92,24 +92,24 @@
         };
 
       flake = {
-        # niface 規格の参照ライブラリ。id 導出(nix/lib.nix)に、適合ヘルパ
+        # outturn 規格の参照ライブラリ。id 導出(nix/lib.nix)に、適合ヘルパ
         # mkSchemaCheck を足して export する。
         lib = (import ./nix/lib.nix { inherit (nixpkgs) lib; }) // {
           # ツール側 testdata(自ツールの出力サンプル)を規格 schema で検証する
-          # check derivation を生成する。Go 検証器(niface-validate)をラップし、
-          # 呼び出し規約・依存(vendorHash)は niface 側に閉じる。呼び出し側は
-          #   niface.lib.mkSchemaCheck { inherit pkgs; testdataDir = ./testdata; }
+          # check derivation を生成する。Go 検証器(outturn-validate)をラップし、
+          # 呼び出し規約・依存(vendorHash)は outturn 側に閉じる。呼び出し側は
+          #   outturn.lib.mkSchemaCheck { inherit pkgs; testdataDir = ./testdata; }
           # だけで済む。testdataDir 配下の *.json を再帰的に全て検証する。
           mkSchemaCheck =
             { pkgs, testdataDir }:
             let
               outturn-go = import ./nix/pkgs/outturn-validate.nix { inherit pkgs; };
             in
-            pkgs.runCommand "niface-schema-check" { } ''
+            pkgs.runCommand "outturn-schema-check" { } ''
               set -euo pipefail
               # 対象 0 件はガード(-print -quit で 1 件見つけ次第打ち切る)。
               if [ -z "$(find ${testdataDir} -type f -name '*.json' -print -quit)" ]; then
-                echo "niface: ${testdataDir} 配下に検証対象の *.json が見つかりません" >&2
+                echo "outturn: ${testdataDir} 配下に検証対象の *.json が見つかりません" >&2
                 exit 2
               fi
               # 検証本体は NUL 区切りで渡し、ファイル名の空白・グロブ・改行に頑健にする。

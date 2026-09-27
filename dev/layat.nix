@@ -1,4 +1,4 @@
-# mattpocock/skills を niface repo root の .claude/skills/ へ配置する layat の
+# mattpocock/skills を outturn repo root の .claude/skills/ へ配置する layat の
 # project mode config を flake-parts module として切り出す。
 # layat の flakeModules.default（dev/flake.nix の imports が読む）を前提に、
 # perSystem.layat.skills へ manifest を宣言する。

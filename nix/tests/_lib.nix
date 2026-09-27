@@ -8,6 +8,6 @@
   mergeDistinct = acc: m:
     let dup = builtins.intersectAttrs acc m;
     in if dup != { } then
-      throw "niface tests: duplicate test name(s) across nix/tests/*.nix: ${builtins.concatStringsSep ", " (builtins.attrNames dup)}"
+      throw "outturn tests: duplicate test name(s) across nix/tests/*.nix: ${builtins.concatStringsSep ", " (builtins.attrNames dup)}"
     else acc // m;
 }

@@ -18,7 +18,7 @@ coverage.html
 go.work
 go.work.sum
 
-# Dependency directory: niface は buildGoModule + vendorHash で依存を解決し
+# Dependency directory: outturn は buildGoModule + vendorHash で依存を解決し
 # vendor はコミットしない（→ ADR-0023）。誤コミット防止のため無視する。
 vendor/
 
