@@ -1,14 +1,14 @@
-# niface
+# outturn
 
 *この文書は英語版 [`README.md`](README.md) の日本語訳。仕様・用語の一次参照は英語版とし、両者に差異があれば英語版が優先する。*
 
 **n**-tools **i**nter**face** — Nix ベースのシステム管理ツール群（nput / nboot / nwrap / nherd / nshadow / ncompose）の実行結果を、単一の構造化 JSON 文書（結果エンベロープ）として stdout に出力するための共通規格。
 
-各ツールが単一の責務を持ち、パイプで組み合わさってディストリビューションを形成する UNIX 哲学的なエコシステムにおいて、niface は結果報告の「配管の口径」を定義する。規格に適合しさえすれば、どの言語で書かれたどのツールでもパイプラインに乗れる。各ツールの*入力* JSON の形は本規格ではなく各ツールが公開・管理する（ADR-0014 参照）。
+各ツールが単一の責務を持ち、パイプで組み合わさってディストリビューションを形成する UNIX 哲学的なエコシステムにおいて、outturn は結果報告の「配管の口径」を定義する。規格に適合しさえすれば、どの言語で書かれたどのツールでもパイプラインに乗れる。各ツールの*入力* JSON の形は本規格ではなく各ツールが公開・管理する（ADR-0014 参照）。
 
 本リポジトリは 2 つの役割を持つ:
 
-1. **niface 規格**: 仕様・schema・適合テストデータ・参照実装
+1. **outturn 規格**: 仕様・schema・適合テストデータ・参照実装
 2. **エコシステム中央ドキュメント**: n プレフィックスツール群の全体構想・ディストリビューション化プラン（[docs/ecosystem/](docs/ecosystem/)）
 
 > **ステータス: draft (specVersion 1)** — 初期論点は確定済み。実装ツールからのフィードバックにより互換変更（フィールド追加）を積む段階。
@@ -35,7 +35,7 @@
 ## リポジトリ構成
 
 ```
-niface/
+outturn/
 ├── CONTEXT.md        # 用語集（規格の語彙の正名）
 ├── docs/             # 規格のコンセプト・設計
 │   ├── adr/          # 設計判断の個別記録（ADR）
@@ -47,7 +47,7 @@ niface/
 │   ├── valid/        #   schema に適合すべきサンプル
 │   ├── invalid/      #   schema が拒否すべきサンプル
 │   └── id-vectors.json  # identity → 期待 id の対応表（言語間互換の要）
-├── go/               # Go 参照実装（エンベロープ型 + id 導出 + 適合検証 + niface-validate CLI）
+├── go/               # Go 参照実装（エンベロープ型 + id 導出 + 適合検証 + outturn-validate CLI）
 ├── nix/              # Nix 実装（id 導出）
 ├── dev/              # 開発環境（devShell + mattpocock/skills 配置）
 └── flake.nix
@@ -85,13 +85,13 @@ item id は `sha256(JCS(identity))` で機械的に導出する。ツールが�
 
 ## 適合
 
-ツールが niface 適合であるとは:
+ツールが outturn 適合であるとは:
 
 1. **schema 検証**: 出力が `schema/v1/envelope.schema.json` を通過する
 2. **id-vectors 通過**: id 導出実装が `testdata/v1/id-vectors.json` の全ベクタで期待値と一致する
 3. **standalone**: 入力は stdin の JSON か明示引数のみ。状態・設定の暗黙探索をしない（詳細は spec §8）
 
-go module は両アーティファクトを embed している（正本とのバイト完全一致を CI が保証）。1. には `conformance.NewDefaultChecker()` がコンパイル済み checker を返し、2. には `niface.IDVectorsV1()` がベクタ表を返すため、Go の consumer は vendored copy を持つ必要がない。
+go module は両アーティファクトを embed している（正本とのバイト完全一致を CI が保証）。1. には `conformance.NewDefaultChecker()` がコンパイル済み checker を返し、2. には `outturn.IDVectorsV1()` がベクタ表を返すため、Go の consumer は vendored copy を持つ必要がない。
 
 自作ツールへの組み込み手順（flake input / go module）は[適合ガイド](docs/guides/conformance.md)を参照。
 

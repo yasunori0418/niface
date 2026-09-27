@@ -1,4 +1,4 @@
-# niface
+# outturn
 
 n プレフィックスツール群（nput / nboot / nwrap / nherd / nshadow / ncompose）の実行結果を単一の構造化 JSON（結果エンベロープ）として stdout に出力するための共通規格の用語集。
 
@@ -66,7 +66,7 @@ _Avoid_: 「`種別:キー`」形式の可読文字列 id。
 **identity の値域**: identity を構成する JSON 値の許容域（spec §5・→ ADR-0024）。文字列（全 Unicode）/ 整数（±(2^53−1)、整数表記のみ）/ bool / null / 配列 / オブジェクト（メンバー名は ASCII）。数値は表記で判定し、小数点・指数表記（`1.0`・`1e3` 等）・NaN・Infinity は域外。負ゼロ表記（`-0`）は域内で `0` と同一 identity として扱い、実装が `0` に正規化する（→ ADR-0027）。域外は実装が id 導出時に拒否する。制約された値域の上で各実装はフル JCS と一致する。
 _Note_: cross-language の巨大整数拒否を `testdata/v1/id-vectors.json` の rejected で固定するときは **≥2^64 の値**（例 `99999999999999999999`）を使う。`[2^63, 2^64)`（例 `9223372036854775808`）は Nix `builtins.fromJSON` が**パース時に throw** し、`verifyVectors` 冒頭の `fromJSON` が tryEval の外で失敗して checks.id-vectors 全体がクラッシュするため使わない。
 
-**JCS**: RFC 8785（JSON Canonicalization Scheme）。id 導出の正準化に使う。niface は identity の値域を上記に制約し、その域上で実装は RFC 8785 と一致する（「サブセット実装」ではなく「値域制約」→ ADR-0024）。
+**JCS**: RFC 8785（JSON Canonicalization Scheme）。id 導出の正準化に使う。outturn は identity の値域を上記に制約し、その域上で実装は RFC 8785 と一致する（「サブセット実装」ではなく「値域制約」→ ADR-0024）。
 _Avoid_: 「実装は JCS のサブセット」という言い回し（値域制約で捉える）。
 
 ### エラーコード
@@ -82,5 +82,5 @@ _Avoid_: warning の code に `E_` prefix、error の code に `W_` prefix を�
 
 **standalone**: 適合ツールの要件。入力は stdin の JSON か明示引数のみとし、状態・設定の暗黙探索や特定ディストリビューション・フレームワークへの依存をしない（→ `spec/v1/spec.md` §8）。
 
-**適合 (conformance)**: `schema/v1/` の JSON Schema 検証・schema で表現しきれない MUST のリント検査（status↔errors/item 整合・`changes[].itemId` の同一 result 内参照整合・`subject.name` / `item.id` の一意性）・`testdata/v1/id-vectors.json` の全ベクタ通過をもって判定する。schema 検証とリント検査の参照実装は Go（`go/conformance`、単一文書 CLI `niface-validate`）（→ `spec/v1/spec.md` §8, ADR-0021, ADR-0023）。
+**適合 (conformance)**: `schema/v1/` の JSON Schema 検証・schema で表現しきれない MUST のリント検査（status↔errors/item 整合・`changes[].itemId` の同一 result 内参照整合・`subject.name` / `item.id` の一意性）・`testdata/v1/id-vectors.json` の全ベクタ通過をもって判定する。schema 検証とリント検査の参照実装は Go（`go/conformance`、単一文書 CLI `outturn-validate`）（→ `spec/v1/spec.md` §8, ADR-0021, ADR-0023）。
 _Avoid_: schema で表現しきれない MUST を「schema を通れば適合」と見なして素通りさせること。

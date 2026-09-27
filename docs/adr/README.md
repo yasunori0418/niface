@@ -1,6 +1,6 @@
 # ADR の書式と改訂注記の運用
 
-niface の設計判断は 1 件 = 1 ADR（Architecture Decision Record）として `docs/adr/` に記録する。決定の根拠と**棄却した代替案**を残し、後から「なぜこうなっているか」「なぜ別案にしなかったか」を追えるようにする。
+outturn の設計判断は 1 件 = 1 ADR（Architecture Decision Record）として `docs/adr/` に記録する。決定の根拠と**棄却した代替案**を残し、後から「なぜこうなっているか」「なぜ別案にしなかったか」を追えるようにする。
 
 規範仕様は `spec/v1/spec.md`、用語は `CONTEXT.md`、設計の概要と索引は `docs/design.md` にある。ADR はそれらの背後にある**判断の記録**を担う。
 

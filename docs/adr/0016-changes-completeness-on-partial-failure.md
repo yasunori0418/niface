@@ -6,7 +6,7 @@
 
 ## 背景
 
-ADR-0014 は rollback の呼び出し規約を ncompose の領分とし、niface は判断材料（`changes` / `reversible` / 適用済み差分）の完全性のみを担うと決めた。しかし spec §4 は「差分のある項目のみを列挙する」としか規定しておらず、apply が途中で失敗したとき `changes[]` がどこまで完全であるべきかは未規定だった。特に item が `failed` のとき change を出すべきかは曖昧で、「途中まで適用されて失敗した」（例: 旧 symlink を除去した後、新 symlink の作成に失敗した）場合に現実の変化が changes から欠落しうる。ncompose の rollback 指揮は changes の走査で完結する設計（→ ADR-0003）のため、失敗した実行でこそ changes の完全性が要る。（tracking #8 / #11）
+ADR-0014 は rollback の呼び出し規約を ncompose の領分とし、outturn は判断材料（`changes` / `reversible` / 適用済み差分）の完全性のみを担うと決めた。しかし spec §4 は「差分のある項目のみを列挙する」としか規定しておらず、apply が途中で失敗したとき `changes[]` がどこまで完全であるべきかは未規定だった。特に item が `failed` のとき change を出すべきかは曖昧で、「途中まで適用されて失敗した」（例: 旧 symlink を除去した後、新 symlink の作成に失敗した）場合に現実の変化が changes から欠落しうる。ncompose の rollback 指揮は changes の走査で完結する設計（→ ADR-0003）のため、失敗した実行でこそ changes の完全性が要る。（tracking #8 / #11）
 
 ## 決定
 
@@ -17,7 +17,7 @@ ADR-0014 は rollback の呼び出し規約を ncompose の領分とし、niface
 
 ## 根拠
 
-- 失敗した実行こそ rollback・復旧の判断材料が要る。適用済み差分が changes に漏れなく残ることは、ADR-0014「niface は判断材料の完全性で支える」の具体化である。
+- 失敗した実行こそ rollback・復旧の判断材料が要る。適用済み差分が changes に漏れなく残ることは、ADR-0014「outturn は判断材料の完全性で支える」の具体化である。
 - 観測主義は generation スロット（→ ADR-0015）と同じ意味論であり、「宣言」ではなく「観測」なら成功・失敗を問わず無条件に同じ意味で出力できる。ADR-0009 の「apply では実際に生じた差分」という既存文言の自然な精緻化でもある。
 - item の status（結果の記録）と change の有無（差分の観測）は別概念であり、failed だから change を省くのは両者の再結合になる（→ ADR-0003 の分離原則）。
 - plan は現実を変えないため「実際に生じた差分」が存在せず、error で終わった plan に完全性を課しても「出力できた分の予測」以上の意味を持たない。検証もできない規範は課さない。

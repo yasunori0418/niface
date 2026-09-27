@@ -1,14 +1,14 @@
-# niface
+# outturn
 
 *Read this in [Japanese (日本語)](README.ja.md).*
 
 **n**-tools **i**nter**face** — a shared JSON specification for the Nix-based system-management tools (nput / nboot / nwrap / nherd / nshadow / ncompose): every tool reports its execution results to stdout as a single structured JSON document (the result envelope).
 
-In a UNIX-philosophy ecosystem where each tool has a single responsibility and they compose through pipes to form a distribution, niface defines the bore of the plumbing for result reporting. Any tool, written in any language, can join a pipeline as long as it conforms to the spec. The shape of each tool's *input* JSON is owned and published by that tool, not by this spec (see ADR-0014).
+In a UNIX-philosophy ecosystem where each tool has a single responsibility and they compose through pipes to form a distribution, outturn defines the bore of the plumbing for result reporting. Any tool, written in any language, can join a pipeline as long as it conforms to the spec. The shape of each tool's *input* JSON is owned and published by that tool, not by this spec (see ADR-0014).
 
 This repository has two roles:
 
-1. **The niface specification**: the normative spec, JSON Schema, conformance test data, and reference implementations.
+1. **The outturn specification**: the normative spec, JSON Schema, conformance test data, and reference implementations.
 2. **The ecosystem's central documentation**: the overall vision for the n-prefixed tools and the distribution plan ([docs/ecosystem/](docs/ecosystem/)).
 
 > **Status: draft (specVersion 1)** — the initial design questions are settled. We are now in the phase of stacking backward-compatible changes (adding fields) driven by feedback from real tools.
@@ -37,7 +37,7 @@ Ecosystem:
 ## Repository layout
 
 ```
-niface/
+outturn/
 ├── CONTEXT.md        # Glossary (the spec's canonical vocabulary)
 ├── docs/             # The spec's concept and design
 │   ├── adr/          # Design decisions as ADRs
@@ -49,7 +49,7 @@ niface/
 │   ├── valid/        #   samples that must pass the schema
 │   ├── invalid/      #   samples the schema must reject
 │   └── id-vectors.json  # identity → expected id table (the key to cross-language compatibility)
-├── go/               # Go reference implementation (envelope types + id derivation + conformance + niface-validate CLI)
+├── go/               # Go reference implementation (envelope types + id derivation + conformance + outturn-validate CLI)
 ├── nix/              # Nix implementation (id derivation)
 ├── dev/              # Development environment (devShell + mattpocock/skills placement)
 └── flake.nix
@@ -87,13 +87,13 @@ The item id is derived mechanically as `sha256(JCS(identity))`. A tool decides o
 
 ## Conformance
 
-A tool is niface-conformant when:
+A tool is outturn-conformant when:
 
 1. **Schema validation**: its output passes `schema/v1/envelope.schema.json`.
 2. **id-vectors**: its id-derivation implementation matches the expected values for every vector in `testdata/v1/id-vectors.json`.
 3. **standalone**: input comes only from stdin JSON or explicit arguments; it never implicitly discovers state or configuration (see spec §8).
 
-The Go module embeds both artifacts (byte-identical to the canonical files, enforced by CI): `conformance.NewDefaultChecker()` returns a ready-to-use checker for 1., and `niface.IDVectorsV1()` exposes the vector table for 2., so Go consumers need no vendored copies.
+The Go module embeds both artifacts (byte-identical to the canonical files, enforced by CI): `conformance.NewDefaultChecker()` returns a ready-to-use checker for 1., and `outturn.IDVectorsV1()` exposes the vector table for 2., so Go consumers need no vendored copies.
 
 For a step-by-step guide to wiring this into your own tool (as a flake input or a Go module), see the [conformance guide](docs/guides/conformance.md).
 

@@ -1,4 +1,4 @@
-# niface: 設計
+# outturn: 設計
 
 設計判断は 1 件 = 1 ADR として `docs/adr/` に個別記録する。本書はその概要と索引。規範的な定義は `spec/v1/spec.md`、用語は `CONTEXT.md` を正とする。
 
@@ -39,7 +39,7 @@ ADR の書式と改訂注記の運用は [`docs/adr/README.md`](adr/README.md) �
 ## リポジトリ構成と適合戦略
 
 ```
-niface/
+outturn/
 ├── CONTEXT.md        # 用語集（glossary。規格の語彙の正名）
 ├── docs/
 │   ├── concept.md    # コンセプト・原則・しないこと
@@ -51,7 +51,7 @@ niface/
 ├── spec/v1/          # 規範仕様（RFC 2119 語彙）
 ├── schema/v1/        # JSON Schema（機械可読の正）
 ├── testdata/v1/      # valid / invalid サンプル + id-vectors.json
-├── go/               # Go 参照実装（型 + id 導出 + 適合検証 + CLI niface-validate）
+├── go/               # Go 参照実装（型 + id 導出 + 適合検証 + CLI outturn-validate）
 ├── nix/              # Nix lib（id 導出・ベクタ検証）
 ├── dev/              # 開発環境（devShell + mattpocock/skills 配置）
 └── flake.nix         # checks: id-vectors / go、apps: validate
@@ -59,7 +59,7 @@ niface/
 
 - **正は JSON Schema**。文書とコードはそれに従う。
 - **id-vectors.json が最重要資産**: identity → 期待 id の対応表。JCS の罠（非 ASCII の値・数値表記・ネスト）を突くベクタと、域外を突く `rejected`（非整数表記・範囲外整数・非 ASCII メンバー名）を含め、全言語実装が CI でこれを通すことで導出の互換を証明する（→ ADR-0004, ADR-0024）。
-- 参照方法は二経路: Go ツールは go module で型を共有（コンパイル時）、各ツールの flake が本リポジトリを input に取り schema 検証 + MUST リント検査 + id-vectors 適合を checks で回す（CI 時）。schema で表現しきれない MUST（status 整合・itemId 参照整合・一意性）は `go/conformance` のリント層が担い、単一文書検証は CLI `niface-validate`（`nix run .#validate`）が提供する（→ ADR-0021, ADR-0023）。
+- 参照方法は二経路: Go ツールは go module で型を共有（コンパイル時）、各ツールの flake が本リポジトリを input に取り schema 検証 + MUST リント検査 + id-vectors 適合を checks で回す（CI 時）。schema で表現しきれない MUST（status 整合・itemId 参照整合・一意性）は `go/conformance` のリント層が担い、単一文書検証は CLI `outturn-validate`（`nix run .#validate`）が提供する（→ ADR-0021, ADR-0023）。
 - バージョニング: specVersion 整数とディレクトリ（v1/）を一致させ、互換変更は v1 内 + リリースタグ、非互換変更のみ v2/ を新設する（詳細は「バージョニングとリリースタグ」節。→ ADR-0010, ADR-0026）。
 - ツール固有の info schema は各ツールのリポジトリが管理する（規格側で抱えない・→ ADR-0007）。
 
@@ -73,7 +73,7 @@ niface/
 リリースタグは同一コミットに 2 本を対で打つ。互換変更 PR のマージごとに打つ。
 
 - `v1.N.P` — 規格スナップショット（flake input / 人間用）。`N` = 規範面（spec / schema）への互換追加ごと、`P` = 規範に影響しない修正（実装 fix・testdata の追補/修正）。互換追加に付随する testdata は N に含み、単独の testdata 追補は P とする。
-- `go/v1.N.P` — 同一コミットの Go module 用ミラー。Go module はサブディレクトリ（`github.com/yasunori0418/niface/go`）にあり、prefix 無しの root タグは Go ツールチェーンから見えないため、`go/` prefix 付きタグが無いと pseudo-version 参照しかできない。
+- `go/v1.N.P` — 同一コミットの Go module 用ミラー。Go module はサブディレクトリ（`github.com/yasunori0418/outturn/go`）にあり、prefix 無しの root タグは Go ツールチェーンから見えないため、`go/` prefix 付きタグが無いと pseudo-version 参照しかできない。
 
 `v1.N.P` は semver 形式だが、ADR-0010 が `specVersion` フィールドについて semver 文字列を棄却したこととは矛盾しない。両者はレイヤが異なる（specVersion = 非互換世代、タグ = リリーススナップショット識別子）。
 

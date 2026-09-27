@@ -1,6 +1,6 @@
 # AGENTS.md
 
-niface — n プレフィックスツール群(nput / nboot / nwrap / nherd / nshadow / ncompose)の実行結果を単一の構造化 JSON(結果エンベロープ)として stdout に出力するための共通規格。規格(spec / schema / testdata)とエコシステム中央ドキュメント(docs/ecosystem/)の 2 つを持つ。
+outturn — n プレフィックスツール群(nput / nboot / nwrap / nherd / nshadow / ncompose)の実行結果を単一の構造化 JSON(結果エンベロープ)として stdout に出力するための共通規格。規格(spec / schema / testdata)とエコシステム中央ドキュメント(docs/ecosystem/)の 2 つを持つ。
 
 ## ドキュメント
 
@@ -17,7 +17,7 @@ niface — n プレフィックスツール群(nput / nboot / nwrap / nherd / ns
 ```sh
 nix flake check                    # id-vectors / go(適合検証 + ベクタ通過)を一括検証
 cd go && go test ./...             # id-vectors 通過 + testdata 適合検証
-nix run .#validate -- <file.json>  # 単一エンベロープを適合検証(niface-validate)
+nix run .#validate -- <file.json>  # 単一エンベロープを適合検証(outturn-validate)
 cd go && go generate ./...         # 正本(schema / id-vectors)変更後に embed コピーを手動同期
 ```
 

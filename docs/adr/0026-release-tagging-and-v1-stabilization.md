@@ -2,14 +2,14 @@
 
 - ステータス: 採用
 - 日付: 2026-07-11
-- 関連: `docs/design.md`, `docs/ecosystem/overview.md`, `go/`(サブディレクトリ module `github.com/yasunori0418/niface/go`), `flake.nix`, ADR-0010
+- 関連: `docs/design.md`, `docs/ecosystem/overview.md`, `go/`(サブディレクトリ module `github.com/yasunori0418/outturn/go`), `flake.nix`, ADR-0010
 - 改訂対象: ADR-0010(「semver 文字列」棄却の射程を `specVersion` フィールドに限定し、リリースタグを別レイヤとして明確化)
 
 ## 背景
 
 `docs/design.md` は「互換変更は v1 内 + git タグ」と定めるが、タグは 1 本も打たれておらず、命名規則・打つタイミング・「draft → 安定」宣言の基準が未定義だった。互換追加(ADR-0015 / 0018 / 0019 等)は既に複数回あるのに、消費側が「どの時点の v1 か」を参照する手段が commit hash しかない。
 
-Go module はサブディレクトリ module(`github.com/yasunori0418/niface/go`)であり、`go/vX.Y.Z` 形式(prefix 付き)のタグが無いと pseudo-version 参照しかできない。prefix 無しの root タグは Go ツールチェーンから見えないため、規格スナップショット用のタグと Go module 用のタグを分けて対で打つ必要がある。
+Go module はサブディレクトリ module(`github.com/yasunori0418/outturn/go`)であり、`go/vX.Y.Z` 形式(prefix 付き)のタグが無いと pseudo-version 参照しかできない。prefix 無しの root タグは Go ツールチェーンから見えないため、規格スナップショット用のタグと Go module 用のタグを分けて対で打つ必要がある。
 
 ADR-0010 はバージョニング規約を定めたが、その射程は `specVersion` フィールド(非互換世代を表す整数)であり、リリース単位のスナップショット識別子(タグ)は空白のままだった。本 ADR はその空白を埋める新規決定で、ADR-0010 の `specVersion` 運用は改訂しない。
 
@@ -35,7 +35,7 @@ ADR-0010 はバージョニング規約を定めたが、その射程は `specVe
 ## 影響
 
 - `docs/design.md`: ADR 索引に本 ADR を追加。「バージョニングとリリースタグ」節を新設し、specVersion(非互換世代)/ リリースタグ(`v1.N.P`・`go/v1.N.P`)/ stable 宣言基準を記述。
-- `docs/ecosystem/overview.md`: niface の draft → stable 基準(2 ツール適合)とリリースタグ体系を追記。
+- `docs/ecosystem/overview.md`: outturn の draft → stable 基準(2 ツール適合)とリリースタグ体系を追記。
 - タグ `v1.0.0` / `go/v1.0.0` は、v1 対象の変更が main に出そろった後の main HEAD に対して打つ(個別の作業ブランチ上では打たない)。
 - `spec/` / `schema/` / `testdata/` / `go/` / `nix/` / `flake.nix` / `README` は無改訂。`specVersion` は 1 のまま(ADR-0010 の運用は不変)。
 
