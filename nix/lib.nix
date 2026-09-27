@@ -1,4 +1,4 @@
-# niface 規格の Nix 実装。
+# outturn 規格の Nix 実装。
 #
 # deriveId は identity を JCS (RFC 8785) で正準化して sha256 する。正しさは
 # builtins.toJSON が JCS と一致することに依存する:
@@ -29,19 +29,19 @@ rec {
     let t = builtins.typeOf v;
     in if t == "int" then
       (if v > maxSafeInt || v < minSafeInt then
-        throw "niface: integer ${toString v} is out of identity domain ±(2^53-1)"
+        throw "outturn: integer ${toString v} is out of identity domain ±(2^53-1)"
       else v)
     else if t == "float" then
-      throw "niface: floating-point number ${toString v} must use integer notation (no fraction/exponent) in identity domain"
+      throw "outturn: floating-point number ${toString v} must use integer notation (no fraction/exponent) in identity domain"
     else if t == "string" || t == "bool" || t == "null" then v
     else if t == "list" then map checkDomain v
     else if t == "set" then
       builtins.mapAttrs
         (name: value:
           if isAscii name then checkDomain value
-          else throw "niface: object member name '${name}' must be ASCII in identity domain")
+          else throw "outturn: object member name '${name}' must be ASCII in identity domain")
         v
-    else throw "niface: unsupported type ${t} in identity domain";
+    else throw "outturn: unsupported type ${t} in identity domain";
 
   # identity ({ kind, key }) から item id を導出する(域外は throw)
   deriveId = identity:
@@ -55,11 +55,11 @@ rec {
       checkVector = v:
         let got = deriveId v.identity;
         in if got == v.expected then true
-           else throw "niface id vector mismatch: got ${got} want ${v.expected} (canonical: ${v.canonical})";
+           else throw "outturn id vector mismatch: got ${got} want ${v.expected} (canonical: ${v.canonical})";
       checkRejected = v:
         let r = builtins.tryEval (deriveId v.identity);
         in if !r.success then true
-           else throw "niface id vector: expected rejection but derived ${r.value} (reason: ${v.reason})";
+           else throw "outturn id vector: expected rejection but derived ${r.value} (reason: ${v.reason})";
       rejected = data.rejected or [ ];
     in builtins.all (x: x)
       ((map checkVector data.vectors) ++ (map checkRejected rejected));

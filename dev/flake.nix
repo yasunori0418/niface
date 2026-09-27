@@ -1,5 +1,5 @@
 {
-  description = "niface development environment";
+  description = "outturn development environment";
 
   inputs = {
     root.url = "path:../";
@@ -7,7 +7,7 @@
     flake-parts.follows = "root/flake-parts";
 
     # フェッチ済みリポジトリを任意パスへ配置する layat（→ https://github.com/yasunori0418/layat）。
-    # niface の開発環境はこの layat を使って mattpocock/skills を .claude/skills/ へ配置する。
+    # outturn の開発環境はこの layat を使って mattpocock/skills を .claude/skills/ へ配置する。
     layat = {
       url = "github:yasunori0418/layat";
       inputs.nixpkgs.follows = "nixpkgs";
