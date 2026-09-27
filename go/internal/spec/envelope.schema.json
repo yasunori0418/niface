@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/yasunori0418/niface/schema/v1/envelope.schema.json",
-  "title": "niface envelope (specVersion 1)",
-  "description": "niface エコシステムの全ツールが stdout に出力する単一 JSON 文書の規格型。トップレベルは常に results[](主体ごとの結果)を持つ。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
+  "$id": "https://github.com/yasunori0418/outturn/schema/v1/envelope.schema.json",
+  "title": "outturn envelope (specVersion 1)",
+  "description": "outturn 規格に適合する全ツールが stdout に出力する単一 JSON 文書の規格型。トップレベルは常に results[](主体ごとの結果)を持つ。producer 適合検証用(additionalProperties: false)。consumer は must-ignore 原則に従い未知フィールドを無視すること。",
   "type": "object",
   "additionalProperties": false,
   "required": ["specVersion", "tool", "command", "status", "dryRun", "startedAt", "finishedAt", "results"],
