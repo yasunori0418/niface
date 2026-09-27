@@ -20,7 +20,7 @@ build(Nix eval/build)
 
 | ツール | 責務 | 状態 | リポジトリ |
 |--------|------|------|-----------|
-| **nput** | store パスの任意パスへの配置（symlink / copy）。世代管理・rollback | **active** | [yasunori0418/nput](https://github.com/yasunori0418/nput) |
+| **layat** | store パスの任意パスへの配置（symlink / copy）。世代管理・rollback | **active** | [yasunori0418/layat](https://github.com/yasunori0418/layat) |
 | **nboot** | kernel / initrd の ESP 配置とブートエントリの世代同期 | planned | — |
 | **nwrap** | setuid / capabilities ラッパーの生成（store の権限モデル上 symlink では原理的に不可能な領分） | planned | — |
 | **nherd** | サービス差分の restart / reload / skip 適用。init 非依存の責務（初期実装は systemd バックエンド） | planned | — |
