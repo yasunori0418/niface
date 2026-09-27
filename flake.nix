@@ -37,19 +37,19 @@
         { pkgs, ... }:
         let
           # niface の Go 参照実装(CLI niface-validate)。定義は
-          # nix/pkgs/niface-validate.nix に括り出し、packages.validate /
+          # nix/pkgs/outturn-validate.nix に括り出し、packages.validate /
           # flake.lib.mkSchemaCheck と共有する。
-          niface-go = import ./nix/pkgs/niface-validate.nix { inherit pkgs; };
+          outturn-go = import ./nix/pkgs/outturn-validate.nix { inherit pkgs; };
         in
         {
-          packages.validate = niface-go;
+          packages.validate = outturn-go;
 
           # nix run .#validate -- envelope.json … 正の schema を store パスから既定注入。
           # 利用側は -schema で上書きできる(Go flag は後勝ち)。
           apps.validate = {
             type = "app";
-            program = "${pkgs.writeShellScript "niface-validate" ''
-              exec ${niface-go}/bin/validate -schema ${./schema/v1/envelope.schema.json} "$@"
+            program = "${pkgs.writeShellScript "outturn-validate" ''
+              exec ${outturn-go}/bin/validate -schema ${./schema/v1/envelope.schema.json} "$@"
             ''}";
           };
 
@@ -65,9 +65,9 @@
             '';
 
             # Go 参照実装のビルド + テスト(id-vectors 通過 + testdata 適合検証)。
-            # niface-go の build/checkPhase で go test ./... が走る。依存は
+            # outturn-go の build/checkPhase で go test ./... が走る。依存は
             # vendorHash で pin した FOD が取得するため vendor をコミットしない。
-            go = niface-go;
+            go = outturn-go;
 
             # 適合ヘルパ mkSchemaCheck 自体の smoke test(dogfooding)。export した
             # lib.mkSchemaCheck に niface の valid testdata を通し、検証器の配線・
@@ -103,7 +103,7 @@
           mkSchemaCheck =
             { pkgs, testdataDir }:
             let
-              niface-go = import ./nix/pkgs/niface-validate.nix { inherit pkgs; };
+              outturn-go = import ./nix/pkgs/outturn-validate.nix { inherit pkgs; };
             in
             pkgs.runCommand "niface-schema-check" { } ''
               set -euo pipefail
@@ -115,7 +115,7 @@
               # 検証本体は NUL 区切りで渡し、ファイル名の空白・グロブ・改行に頑健にする。
               # pipefail により validate の非 0 終了(schema 違反)は xargs 経由で伝播する。
               find ${testdataDir} -type f -name '*.json' -print0 | sort -z \
-                | xargs -0 ${niface-go}/bin/validate -schema ${./schema/v1/envelope.schema.json}
+                | xargs -0 ${outturn-go}/bin/validate -schema ${./schema/v1/envelope.schema.json}
               touch $out
             '';
         };

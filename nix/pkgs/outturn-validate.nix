@@ -10,7 +10,7 @@
 # 共有し、検証器の呼び出し規約・依存(vendorHash)を niface 側に閉じ込める。
 { pkgs }:
 pkgs.buildGoModule {
-  pname = "niface-validate";
+  pname = "outturn-validate";
   version = "0.1.0";
   src = ../..;
   modRoot = "go";
