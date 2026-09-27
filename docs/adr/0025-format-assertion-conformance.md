@@ -17,7 +17,7 @@ schema は `startedAt` / `finishedAt` に `format: date-time` を宣言し、spe
 ## 決定
 
 - spec §2 に `startedAt` / `finishedAt` の RFC 3339 MUST を prose で明文化する(`subjectResult` の同フィールドも同じ制約に従う)。
-- spec §8 に「(1) の schema 検証は `format` を assertion として評価する」を明記する。Draft 2020-12 の既定(format = 注釈扱い)に依らず、niface の適合はこの評価を要求する。
+- spec §8 に「(1) の schema 検証は `format` を assertion として評価する」を明記する。Draft 2020-12 の既定(format = 注釈扱い)に依らず、outturn の適合はこの評価を要求する。
 - go/conformance の `NewChecker` で `santhosh-tekuri/jsonschema` の `AssertFormat()` を呼び、format assertion を有効化する。santhosh-tekuri は `date-time` を RFC 3339 に基づき検証する(`T` 区切り必須・オフセット必須。閏秒や秒小数などの裁量部分の扱いは同実装に委ねる)。既存 API の呼び出しのみで**依存追加なし → vendorHash 不変 → `flake.nix` 不変**。
 - `testdata/v1/invalid/` に不正日時ベクタを追加する(top-level `startedAt` / `subjectResult` の `finishedAt`)。他フィールドは valid に保ち、format assertion のみが弾くことを保証する。
 - `specVersion` は 1 のまま。`format: date-time` は当初から宣言済みで RFC 3339 が意図だった。評価漏れの修正であり新規制約でも意味変更でもない(ADR-0021 / ADR-0024 と同判断)。

@@ -1,4 +1,4 @@
-# niface: 仕様（specVersion 1）
+# outturn: 仕様（specVersion 1）
 
 本文書は規範である。キーワード MUST / MUST NOT / SHOULD / MAY は RFC 2119 に従う。設計判断の根拠は design.md、目的と原則は concept.md を参照。
 
@@ -194,8 +194,8 @@ identity（`kind` と `key`）を構成する JSON 値は次の値域に限る�
 
 ## 8. 適合
 
-- 本仕様への適合は、次の全てで判定する: (1) schema/v1/ の JSON Schema 検証を通ること、(2) schema で表現しきれない MUST を満たすこと、(3) testdata/v1/id-vectors.json の全ベクタ通過。(1)(2) の参照検証は Go 実装(go/conformance、および単一文書 CLI の niface-validate)が担う
-- (1) の schema 検証は `format` を**単なる注釈ではなく assertion として評価する**。`format: date-time` を宣言した `startedAt` / `finishedAt` は RFC 3339 に適合しなければ schema 検証を通らない（§2）。Draft 2020-12 の既定（format = 注釈扱い）に依らず、niface の適合はこの評価を要求する。受理する date-time は §2 の profile（`T` 区切り + オフセット必須）に従い、閏秒や秒小数などの RFC 3339 の裁量部分の扱いは検証器の実装に委ねる（→ ADR-0025）
+- 本仕様への適合は、次の全てで判定する: (1) schema/v1/ の JSON Schema 検証を通ること、(2) schema で表現しきれない MUST を満たすこと、(3) testdata/v1/id-vectors.json の全ベクタ通過。(1)(2) の参照検証は Go 実装(go/conformance、および単一文書 CLI の outturn-validate)が担う
+- (1) の schema 検証は `format` を**単なる注釈ではなく assertion として評価する**。`format: date-time` を宣言した `startedAt` / `finishedAt` は RFC 3339 に適合しなければ schema 検証を通らない（§2）。Draft 2020-12 の既定（format = 注釈扱い）に依らず、outturn の適合はこの評価を要求する。受理する date-time は §2 の profile（`T` 区切り + オフセット必須）に従い、閏秒や秒小数などの RFC 3339 の裁量部分の扱いは検証器の実装に委ねる（→ ADR-0025）
 - (2) の対象は次の MUST である。いずれも §2 / §5 に規範があり、JSON Schema では表現しきれないため検証はリント検査で行う
     - status と errors / item の整合（§2）: `status: "error"` は `errors[]` 非空、または `status: "error"` の主体（`item.status: "failed"` を含む主体）を伴う。`status: "success"` はその否定（`errors[]` 空かつ error 主体なし）。`subjectResult` も同型
     - `changes[].itemId` の同一 result 内参照整合（§5）: `itemId` は同じ `result` の `items[].id` を指す。`result` を跨いだ参照・不在の id 参照を含めてはならない
